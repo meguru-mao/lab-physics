@@ -1,0 +1,19 @@
+{
+  "name": "lab-physics-frontend",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev:h5": "cross-env UNI_PLATFORM=h5 vite -c vite.local.config.js",
+    "build:h5": "cross-env UNI_PLATFORM=h5 vite build -c vite.local.config.js"
+  },
+  "dependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@dcloudio/vite-plugin-uni": "^3.0.0-alpha-4080420251023001",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "cross-env": "^7.0.3",
+    "vite": "^6.0.7"
+  }
+}

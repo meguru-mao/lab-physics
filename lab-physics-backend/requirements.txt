@@ -1,0 +1,9 @@
+fastapi==0.110.0
+uvicorn[standard]==0.23.2
+SQLAlchemy==2.0.29
+PyMySQL==1.1.0
+requests==2.31.0
+python-dotenv==1.0.0
+PyJWT==2.8.0
+pydantic==2.7.1
+passlib==1.7.4
