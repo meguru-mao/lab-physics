@@ -25,7 +25,11 @@ export function apiRequest({ url, method = 'GET', data = {}, header = {} }) {
         data,
         success: (res) => {
           const statusCode = res.statusCode || (res.result && res.result.statusCode) || 200
-          const dataObj = res.data || res.result || {}
+          let dataObj = res.data || res.result || {}
+          // 云托管可能返回字符串形式的 JSON，需要兼容解析
+          if (typeof dataObj === 'string') {
+            try { dataObj = JSON.parse(dataObj) } catch (e) {}
+          }
           if (statusCode >= 200 && statusCode < 300) {
             resolve(dataObj)
           } else {
@@ -66,5 +70,5 @@ export function apiRequest({ url, method = 'GET', data = {}, header = {} }) {
     })
   })
 }
-// 对外仍然导出 API_BASE，保持现有页面兼容
-export { API_BASE }
+// 对外仍然导出 API_BASE 与 IS_PROD，保持现有页面兼容
+export { API_BASE, IS_PROD }

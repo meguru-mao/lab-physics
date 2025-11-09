@@ -94,7 +94,7 @@ def _save_fig(user_id: int, experiment: str, filename_prefix: str) -> Tuple[str,
 
 
 # -------------------------- 光纤传感与通讯 --------------------------
-def plot_fiber_iu(user_id: int, U: List[float], I: List[float]) -> str:
+def plot_fiber_iu(user_id: int, U: List[float], I: List[float]) -> Tuple[str, str]:
     _set_chinese_font()
     fig, ax = plt.subplots(figsize=_new_fig_size_cm(), dpi=300)
     U_arr = np.array(U, dtype=float)
@@ -107,11 +107,11 @@ def plot_fiber_iu(user_id: int, U: List[float], I: List[float]) -> str:
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    _, url = _save_fig(user_id, 'fiber', 'I-U')
-    return url
+    fpath, url = _save_fig(user_id, 'fiber', 'I-U')
+    return fpath, url
 
 
-def plot_fiber_pi(user_id: int, I: List[float], P: List[float]) -> str:
+def plot_fiber_pi(user_id: int, I: List[float], P: List[float]) -> Tuple[str, str]:
     _set_chinese_font()
     fig, ax = plt.subplots(figsize=_new_fig_size_cm(), dpi=300)
     I_arr = np.array(I, dtype=float)
@@ -124,11 +124,11 @@ def plot_fiber_pi(user_id: int, I: List[float], P: List[float]) -> str:
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    _, url = _save_fig(user_id, 'fiber', 'P-I')
-    return url
+    fpath, url = _save_fig(user_id, 'fiber', 'P-I')
+    return fpath, url
 
 
-def plot_photodiode_iv(user_id: int, V: List[float], I0: List[float], I1: List[float], I2: List[float]) -> str:
+def plot_photodiode_iv(user_id: int, V: List[float], I0: List[float], I1: List[float], I2: List[float]) -> Tuple[str, str]:
     _set_chinese_font()
     fig, ax = plt.subplots(figsize=_new_fig_size_cm(), dpi=300)
     V_arr = np.array(V, dtype=float)
@@ -147,8 +147,8 @@ def plot_photodiode_iv(user_id: int, V: List[float], I0: List[float], I1: List[f
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    _, url = _save_fig(user_id, 'fiber', 'photodiode-IV')
-    return url
+    fpath, url = _save_fig(user_id, 'fiber', 'photodiode-IV')
+    return fpath, url
 
 
 # -------------------------- 弗兰克-赫兹 --------------------------
@@ -169,9 +169,9 @@ def _polyfit_smooth(x: np.ndarray, y: np.ndarray, deg: int = 5) -> Tuple[np.ndar
     return x_fit, y_fit, y_pred_orig
 
 
-def plot_frank_hertz(user_id: int, VG2K: List[float], groups: List[Tuple[List[float], str]]) -> List[str]:
+def plot_frank_hertz(user_id: int, VG2K: List[float], groups: List[Tuple[List[float], str]]) -> List[Tuple[str, str]]:
     _set_chinese_font()
-    urls: List[str] = []
+    results: List[Tuple[str, str]] = []
     x = np.array(VG2K, dtype=float)
     for idx, (current_list, label) in enumerate(groups, start=1):
         y = np.array(current_list, dtype=float)
@@ -191,13 +191,13 @@ def plot_frank_hertz(user_id: int, VG2K: List[float], groups: List[Tuple[List[fl
         ax.legend(loc='center left', fontsize=10, framealpha=0.9, bbox_to_anchor=(0.02, 0.5))
         ax.grid(True, color='#e0e0e0', linestyle='--', linewidth=0.5, alpha=0.7)
         plt.tight_layout()
-        _, url = _save_fig(user_id, 'frank-hertz', f'frank_group{idx}')
-        urls.append(url)
-    return urls
+        fpath, url = _save_fig(user_id, 'frank-hertz', f'frank_group{idx}')
+        results.append((fpath, url))
+    return results
 
 
 # -------------------------- 密里根油滴 --------------------------
-def plot_millikan(user_id: int, ni: List[float], qi: List[float]) -> str:
+def plot_millikan(user_id: int, ni: List[float], qi: List[float]) -> Tuple[str, str]:
     _set_chinese_font()
     x = np.array(ni, dtype=float)
     y = np.array(qi, dtype=float)
@@ -226,12 +226,12 @@ def plot_millikan(user_id: int, ni: List[float], qi: List[float]) -> str:
     ax.grid(True, linestyle='--', alpha=0.6, color='gray')
     ax.legend(loc='lower right', fontsize=10, frameon=True)
     plt.tight_layout()
-    _, url = _save_fig(user_id, 'millikan', 'millikan_qi_ni')
-    return url
+    fpath, url = _save_fig(user_id, 'millikan', 'millikan_qi_ni')
+    return fpath, url
 
 
 # -------------------------- 力学实验 --------------------------
-def plot_mech_t2_m(user_id: int, m0_g: float, weights_g: List[float], T10_avg_s: List[float]) -> Tuple[str, float]:
+def plot_mech_t2_m(user_id: int, m0_g: float, weights_g: List[float], T10_avg_s: List[float]) -> Tuple[str, str, float]:
     _set_chinese_font()
     m0_g = float(m0_g)
     w = np.array(weights_g, dtype=float)
@@ -256,11 +256,11 @@ def plot_mech_t2_m(user_id: int, m0_g: float, weights_g: List[float], T10_avg_s:
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    _, url = _save_fig(user_id, 'mechanics', 'mech_T2_M')
-    return url, k
+    fpath, url = _save_fig(user_id, 'mechanics', 'mech_T2_M')
+    return fpath, url, k
 
 
-def plot_mech_v2_x2(user_id: int, x_cm: List[float], v_avg_cms: List[float]) -> Tuple[str, float, float]:
+def plot_mech_v2_x2(user_id: int, x_cm: List[float], v_avg_cms: List[float]) -> Tuple[str, str, float, float]:
     _set_chinese_font()
     x_cm = np.array(x_cm, dtype=float)
     v_avg = np.array(v_avg_cms, dtype=float)
@@ -285,5 +285,5 @@ def plot_mech_v2_x2(user_id: int, x_cm: List[float], v_avg_cms: List[float]) -> 
             bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    _, url = _save_fig(user_id, 'mechanics', 'mech_v2_x2')
-    return url, omega, T_calc
+    fpath, url = _save_fig(user_id, 'mechanics', 'mech_v2_x2')
+    return fpath, url, omega, T_calc

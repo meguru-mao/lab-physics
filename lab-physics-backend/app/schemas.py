@@ -41,6 +41,8 @@ class FiberPlotRequest(BaseModel):
     I0: Optional[List[float]] = Field(None, description="光电二极管：P=0 mW 光电流")
     I1: Optional[List[float]] = Field(None, description="光电二极管：P=0.100 mW 光电流")
     I2: Optional[List[float]] = Field(None, description="光电二极管：P=0.200 mW 光电流")
+    # 是否返回 data URI（用于云托管下图片外网不可直接访问的场景）
+    return_data_uri: Optional[bool] = Field(False, description="是否返回 data URI 以便前端直接显示")
 
 
 class FrankHertzGroup(BaseModel):
@@ -52,11 +54,13 @@ class FrankHertzRequest(BaseModel):
     # 若未提供，则在接口层默认使用 1..82 的序列
     VG2K: Optional[List[float]] = None
     groups: List[FrankHertzGroup]
+    return_data_uri: Optional[bool] = Field(False, description="是否返回 data URI 以便前端直接显示")
 
 
 class MillikanRequest(BaseModel):
     ni: List[float]
     qi: List[float]
+    return_data_uri: Optional[bool] = Field(False, description="是否返回 data URI 以便前端直接显示")
 
 
 class MechanicsT2M(BaseModel):
@@ -73,8 +77,10 @@ class MechanicsV2X2(BaseModel):
 class MechanicsRequest(BaseModel):
     t2m: MechanicsT2M
     v2x2: MechanicsV2X2
+    return_data_uri: Optional[bool] = Field(False, description="是否返回 data URI 以便前端直接显示")
 
 
 class PlotImagesResponse(BaseModel):
     images: List[str]
+    images_data: Optional[List[str]] = None
     message: Optional[str] = None

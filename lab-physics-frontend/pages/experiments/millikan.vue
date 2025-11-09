@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { apiRequest, API_BASE } from '../../utils/request.js'
+import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
 export default {
   data() {
     return {
@@ -42,13 +42,31 @@ export default {
       const qi = this.toNums(this.qiArr)
       if (ni.length !== 6 || qi.length !== 6) { uni.showToast({ title: '输入必须为数字', icon: 'none' }); return }
       try {
-        const res = await apiRequest({ url: API_BASE + '/api/plots/millikan', method: 'POST', data: { ni, qi } })
-        this.images = (res && res.images) || []
+        const res = await apiRequest({ url: '/api/plots/millikan', method: 'POST', data: { ni, qi, return_data_uri: IS_PROD } })
+        const imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
+        this.images = imgs
       } catch (e) {}
     },
-    fullUrl(u) { return u && (u.startsWith('http') ? u : (API_BASE + u)) },
+    fullUrl(u) { return u && (u.startsWith('data:') ? u : (u.startsWith('http') ? u : (API_BASE + u))) },
     downloadImage(u) {
       const url = this.fullUrl(u)
+      if (!url) return
+      if (url.startsWith('data:')) {
+        // #ifdef MP-WEIXIN
+        try {
+          const base64 = url.split(',')[1]
+          const filePath = `${wx.env.USER_DATA_PATH}/millikan_${Date.now()}.png`
+          const fs = wx.getFileSystemManager()
+          fs.writeFile({ filePath, data: base64, encoding: 'base64', success: () => {
+            wx.saveImageToPhotosAlbum({ filePath, success: () => uni.showToast({ title: '已保存到相册' }) })
+          } })
+        } catch (e) { uni.showToast({ title: '保存失败', icon: 'none' }) }
+        // #endif
+        // #ifdef H5
+        const a = document.createElement('a'); a.href = url; a.download = 'millikan.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a)
+        // #endif
+        return
+      }
       // #ifdef H5
       const a = document.createElement('a'); a.href = url; a.download = 'millikan.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a)

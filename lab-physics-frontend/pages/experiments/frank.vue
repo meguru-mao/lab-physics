@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { apiRequest, API_BASE } from '../../utils/request.js'
+import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
 
 export default {
   data() {
@@ -79,14 +79,32 @@ export default {
       }
       if (!payload.groups.length) { uni.showToast({ title: '请至少添加一组数据', icon: 'none' }); return }
       try {
-        const res = await apiRequest({ url: API_BASE + '/api/plots/frank-hertz', method: 'POST', data: payload })
-        this.images = (res && res.images) || []
+        const res = await apiRequest({ url: '/api/plots/frank-hertz', method: 'POST', data: Object.assign({}, payload, { return_data_uri: IS_PROD }) })
+        const imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
+        this.images = imgs
         if (!this.images.length) uni.showToast({ title: '未返回图像', icon: 'none' })
       } catch (e) {}
     },
-    fullUrl(u) { return u && (u.startsWith('http') ? u : (API_BASE + u)) },
+    fullUrl(u) { return u && (u.startsWith('data:') ? u : (u.startsWith('http') ? u : (API_BASE + u))) },
     downloadImage(u) {
       const url = this.fullUrl(u)
+      if (!url) return
+      if (url.startsWith('data:')) {
+        // #ifdef MP-WEIXIN
+        try {
+          const base64 = url.split(',')[1]
+          const filePath = `${wx.env.USER_DATA_PATH}/frank_${Date.now()}.png`
+          const fs = wx.getFileSystemManager()
+          fs.writeFile({ filePath, data: base64, encoding: 'base64', success: () => {
+            wx.saveImageToPhotosAlbum({ filePath, success: () => uni.showToast({ title: '已保存到相册' }) })
+          } })
+        } catch (e) { uni.showToast({ title: '保存失败', icon: 'none' }) }
+        // #endif
+        // #ifdef H5
+        const a = document.createElement('a'); a.href = url; a.download = 'frank-hertz.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a)
+        // #endif
+        return
+      }
       // #ifdef H5
       const a = document.createElement('a'); a.href = url; a.download = 'frank-hertz.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a)

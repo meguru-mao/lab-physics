@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+import base64
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -75,21 +76,37 @@ def admin_list_users(admin=Depends(get_current_admin_user), db: Session = Depend
 @app.post("/api/plots/fiber", response_model=PlotImagesResponse)
 def api_plot_fiber(payload: FiberPlotRequest, user=Depends(get_current_user)):
     images = []
+    images_data = []
     if payload.plot_type == 'iu':
         if not (payload.U and payload.I):
             raise HTTPException(status_code=400, detail="I-U 图需提供 U 与 I 数组")
-        images.append(plot_fiber_iu(user.user_id, payload.U, payload.I))
+        fpath, url = plot_fiber_iu(user.user_id, payload.U, payload.I)
+        images.append(url)
+        if payload.return_data_uri:
+            with open(fpath, 'rb') as f:
+                images_data.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
     elif payload.plot_type == 'pi':
         if not (payload.I and payload.P):
             raise HTTPException(status_code=400, detail="P-I 图需提供 I 与 P 数组")
-        images.append(plot_fiber_pi(user.user_id, payload.I, payload.P))
+        fpath, url = plot_fiber_pi(user.user_id, payload.I, payload.P)
+        images.append(url)
+        if payload.return_data_uri:
+            with open(fpath, 'rb') as f:
+                images_data.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
     elif payload.plot_type == 'photodiode':
         if not (payload.V and payload.I0 and payload.I1 and payload.I2):
             raise HTTPException(status_code=400, detail="光电二极管图需提供 V、I0、I1、I2 数组")
-        images.append(plot_photodiode_iv(user.user_id, payload.V, payload.I0, payload.I1, payload.I2))
+        fpath, url = plot_photodiode_iv(user.user_id, payload.V, payload.I0, payload.I1, payload.I2)
+        images.append(url)
+        if payload.return_data_uri:
+            with open(fpath, 'rb') as f:
+                images_data.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
     else:
         raise HTTPException(status_code=400, detail="未知的 plot_type")
-    return PlotImagesResponse(images=images, message="生成完成")
+    resp = PlotImagesResponse(images=images, message="生成完成")
+    if images_data:
+        resp.images_data = images_data
+    return resp
 
 
 @app.post("/api/plots/frank-hertz", response_model=PlotImagesResponse)
@@ -104,16 +121,31 @@ def api_plot_frank_hertz(payload: FrankHertzRequest, user=Depends(get_current_us
         if not g.currents or len(g.currents) != len(VG2K):
             raise HTTPException(status_code=400, detail="每组 currents 需与 VG2K 长度一致（默认 82 项）")
         groups.append((g.currents, g.label))
-    images = plot_frank_hertz(user.user_id, VG2K, groups)
-    return PlotImagesResponse(images=images, message=f"共生成{len(images)}张图像")
+    results = plot_frank_hertz(user.user_id, VG2K, groups)
+    images = []
+    images_data = []
+    for fpath, url in results:
+        images.append(url)
+        if payload.return_data_uri:
+            with open(fpath, 'rb') as f:
+                images_data.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
+    resp = PlotImagesResponse(images=images, message=f"共生成{len(images)}张图像")
+    if images_data:
+        resp.images_data = images_data
+    return resp
 
 
 @app.post("/api/plots/millikan", response_model=PlotImagesResponse)
 def api_plot_millikan(payload: MillikanRequest, user=Depends(get_current_user)):
     if not payload.ni or not payload.qi or len(payload.ni) != len(payload.qi):
         raise HTTPException(status_code=400, detail="ni 与 qi 数组长度需一致且均非空")
-    url = plot_millikan(user.user_id, payload.ni, payload.qi)
-    return PlotImagesResponse(images=[url], message="生成完成")
+    fpath, url = plot_millikan(user.user_id, payload.ni, payload.qi)
+    images = [url]
+    resp = PlotImagesResponse(images=images, message="生成完成")
+    if payload.return_data_uri:
+        with open(fpath, 'rb') as f:
+            resp.images_data = ['data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8')]
+    return resp
 
 
 @app.post("/api/plots/mechanics", response_model=PlotImagesResponse)
@@ -123,13 +155,20 @@ def api_plot_mechanics(payload: MechanicsRequest, user=Depends(get_current_user)
         raise HTTPException(status_code=400, detail="t2m 字段缺失或为空")
     if len(payload.t2m.weights_g) != len(payload.t2m.T10_avg_s):
         raise HTTPException(status_code=400, detail="weights_g 与 T10_avg_s 需长度一致")
-    url1, k = plot_mech_t2_m(user.user_id, payload.t2m.m0_g, payload.t2m.weights_g, payload.t2m.T10_avg_s)
+    fpath1, url1, k = plot_mech_t2_m(user.user_id, payload.t2m.m0_g, payload.t2m.weights_g, payload.t2m.T10_avg_s)
 
     # v2-x2
     if not (payload.v2x2 and payload.v2x2.x_cm and payload.v2x2.v_avg_cms):
         raise HTTPException(status_code=400, detail="v2x2 字段缺失或为空")
     if len(payload.v2x2.x_cm) != len(payload.v2x2.v_avg_cms):
         raise HTTPException(status_code=400, detail="x_cm 与 v_avg_cms 需长度一致")
-    url2, omega, T_calc = plot_mech_v2_x2(user.user_id, payload.v2x2.x_cm, payload.v2x2.v_avg_cms)
+    fpath2, url2, omega, T_calc = plot_mech_v2_x2(user.user_id, payload.v2x2.x_cm, payload.v2x2.v_avg_cms)
 
-    return PlotImagesResponse(images=[url1, url2], message="生成完成")
+    resp = PlotImagesResponse(images=[url1, url2], message="生成完成")
+    if payload.return_data_uri:
+        imgs = []
+        for fp in [fpath1, fpath2]:
+            with open(fp, 'rb') as f:
+                imgs.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
+        resp.images_data = imgs
+    return resp
