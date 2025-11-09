@@ -15,6 +15,8 @@ WORKDIR /app
 # 可选：安装中文字体，避免生成图片中文乱码（如不需要可删除）
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk \
+    fontconfig \
+    && fc-cache -f -v \
     && rm -rf /var/lib/apt/lists/*
 
 # 提前复制依赖文件，利用缓存加速构建

@@ -14,6 +14,8 @@ from typing import List, Tuple
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import glob
 from scipy.interpolate import CubicSpline
 
 
@@ -22,14 +24,57 @@ def _ensure_dir(path: str):
 
 
 def _set_chinese_font():
-    """尽量设置可用中文字体，保证中文标题/标签在不同环境下可读。"""
-    fonts = [
-        'Microsoft YaHei', 'SimHei', 'Noto Sans CJK SC', 'Source Han Sans CN',
-        'WenQuanYi Micro Hei', 'DejaVu Sans', 'Arial', 'Liberation Sans'
-    ]
-    matplotlib.rcParams['font.sans-serif'] = fonts
-    matplotlib.rcParams['font.family'] = 'sans-serif'
-    matplotlib.rcParams['axes.unicode_minus'] = False
+    """尽量设置可用中文字体，保证中文标题/标签在不同环境下可读。
+    优先使用 Noto Sans CJK / Source Han Sans（容器中通过 fonts-noto-cjk 安装），并在找不到时回退。
+    """
+    try:
+        # 主动加载系统中的 CJK 字体文件，避免 Matplotlib 未扫描到导致缺字
+        candidate_files = []
+        for root in [
+            "/usr/share/fonts",
+            "/usr/local/share/fonts",
+            "/app/fonts",
+        ]:
+            for pattern in [
+                "**/NotoSansCJK*.ttc",
+                "**/NotoSansCJK*.otf",
+                "**/SourceHanSans*.otf",
+                "**/SourceHanSans*.ttc",
+            ]:
+                candidate_files.extend(glob.glob(os.path.join(root, pattern), recursive=True))
+        for f in candidate_files:
+            try:
+                fm.fontManager.addfont(f)
+            except Exception:
+                pass
+
+        # 收集可用字体名称
+        font_names = [f.name for f in fm.fontManager.ttflist]
+        preferred = []
+        for name in [
+            'Noto Sans CJK SC',
+            'Noto Sans CJK',
+            'Source Han Sans CN',
+            'Noto Sans SC',
+            'WenQuanYi Micro Hei',
+            'SimHei',
+            'Microsoft YaHei',
+        ]:
+            if name in font_names:
+                preferred.append(name)
+
+        fallback = ['DejaVu Sans', 'Arial Unicode MS', 'Arial', 'Liberation Sans']
+        fonts = preferred + fallback
+        if not fonts:
+            fonts = fallback
+
+        matplotlib.rcParams['font.sans-serif'] = fonts
+        matplotlib.rcParams['font.family'] = 'sans-serif'
+        matplotlib.rcParams['axes.unicode_minus'] = False
+    except Exception:
+        matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Liberation Sans']
+        matplotlib.rcParams['font.family'] = 'sans-serif'
+        matplotlib.rcParams['axes.unicode_minus'] = False
 
 
 def _new_fig_size_cm(width_cm: float = 15.0, height_cm: float = 8.0) -> Tuple[float, float]:
