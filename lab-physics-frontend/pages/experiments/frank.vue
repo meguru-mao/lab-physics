@@ -1,8 +1,8 @@
 <template>
   <view class="page">
     <view class="section">
-      <view class="title">x 轴：VG2K 默认使用 1 到 82（共 82 个点），无需填写</view>
-      <view class="hint">请仅填写各组 currents，长度需为 82</view>
+      <view class="title">x 轴：VG2K 默认使用 1 到 82（共 82 个点）无需填写</view>
+      <view class="hint">请仅填写各组电流IA，82个数据</view>
     </view>
 
     <view class="section">
@@ -17,8 +17,8 @@
           </view>
         </view>
         <view class="field">
-          <view class="label">currents（与 VG2K 等长，逗号分隔）</view>
-          <textarea v-model="g.currents" :maxlength="-1" placeholder="例如：0,0.002,0.014,0.045,...（支持超长文本）" />
+          <view class="label">电流IA，共82组数据用,隔开</view>
+          <textarea v-model="g.currents" :maxlength="-1" placeholder="例如：0,0.002,0.014,0.045,..." />
         </view>
         <button class="danger mini" @click="removeGroup(idx)" v-if="groups.length>1">移除该组</button>
         <view class="divider" />
@@ -152,12 +152,12 @@ export default {
 
 <style>
 .page { padding: 24rpx; }
-.section { margin-bottom: 24rpx; background: #fff; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
+.section { margin-bottom: 24rpx; background: #ffb69d; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .title { font-size: 28rpx; margin-bottom: 16rpx; }
 .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
-textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; }
-input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; box-sizing: border-box; }
+textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
+input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; box-sizing: border-box; background: #fff; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; align-items: center; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }

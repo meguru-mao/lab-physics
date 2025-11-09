@@ -14,11 +14,11 @@
       <view class="title">I-U 图数据</view>
       <view class="field">
         <view class="label">U (逗号分隔)</view>
-        <textarea v-model="form.U" placeholder="例如：0,0.75,1.0,1.1" />
+        <textarea v-model="form.U" :maxlength="-1" placeholder="例如：0,0.75,1.0,1.1" />
       </view>
       <view class="field">
         <view class="label">I (逗号分隔，单位 mA)</view>
-        <textarea v-model="form.I" placeholder="例如：0,0.2,5,10" />
+        <textarea v-model="form.I" :maxlength="-1" placeholder="例如：0,0.2,5,10" />
       </view>
     </view>
 
@@ -27,11 +27,11 @@
       <view class="title">P-I 图数据</view>
       <view class="field">
         <view class="label">I (逗号分隔，单位 mA)</view>
-        <textarea v-model="form.I" placeholder="例如：0,5,10,15" />
+        <textarea v-model="form.I" :maxlength="-1" placeholder="例如：0,5,10,15" />
       </view>
       <view class="field">
         <view class="label">P (逗号分隔，单位 mW)</view>
-        <textarea v-model="form.P" placeholder="例如：0,0.001,0.167,0.411" />
+        <textarea v-model="form.P" :maxlength="-1" placeholder="例如：0,0.001,0.167,0.411" />
       </view>
     </view>
 
@@ -40,19 +40,19 @@
       <view class="title">光电二极管 I-V 数据</view>
       <view class="field">
         <view class="label">V (逗号分隔，单位 V)</view>
-        <textarea v-model="form.V" placeholder="例如：0,1,2,3,4,5" />
+        <textarea v-model="form.V" :maxlength="-1" placeholder="例如：0,1,2,3,4,5" />
       </view>
       <view class="field">
         <view class="label">I0 (P=0mW，逗号分隔)</view>
-        <textarea v-model="form.I0" placeholder="例如：0,0,0,0,0,0" />
+        <textarea v-model="form.I0" :maxlength="-1" placeholder="例如：0,0,0,0,0,0" />
       </view>
       <view class="field">
         <view class="label">I1 (P=0.100mW，逗号分隔)</view>
-        <textarea v-model="form.I1" placeholder="例如：98,99,99,100,98,99" />
+        <textarea v-model="form.I1" :maxlength="-1" placeholder="例如：98,99,99,100,98,99" />
       </view>
       <view class="field">
         <view class="label">I2 (P=0.200mW，逗号分隔)</view>
-        <textarea v-model="form.I2" placeholder="例如：200,200,199,200,200,200" />
+        <textarea v-model="form.I2" :maxlength="-1" placeholder="例如：200,200,199,200,200,200" />
       </view>
     </view>
 
@@ -209,12 +209,12 @@ export default {
 
 <style>
 .page { padding: 24rpx; }
-.section { margin-bottom: 24rpx; background: #fff; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
+.section { margin-bottom: 24rpx; background: #ffb69d; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .title { font-size: 28rpx; margin-bottom: 16rpx; }
 .radio-item { margin-right: 24rpx; }
 .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
-textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; }
+textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }

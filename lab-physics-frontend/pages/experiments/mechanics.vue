@@ -3,14 +3,14 @@
     <view class="section">
       <view class="title">T²-M 数据</view>
       <view class="field"><view class="label">滑块质量 m0（g）</view><input v-model="t2m.m0_g" type="digit" placeholder="例如：241.68" /></view>
-      <view class="field"><view class="label">weights_g（逗号分隔，砝码质量）</view><textarea v-model="t2m.weights_g" placeholder="例如：20,40,50,70,100" /></view>
-      <view class="field"><view class="label">T10_avg_s（逗号分隔，10T平均值，单位 s）</view><textarea v-model="t2m.T10_avg_s" placeholder="例如：17.0158,17.6387,17.9340,18.5316,19.3818" /></view>
+      <view class="field"><view class="label">砝码质量m（逗号分隔）</view><textarea v-model="t2m.weights_g" :maxlength="-1" placeholder="例如：20,40,50,70,100" /></view>
+      <view class="field"><view class="label">10T平均值（逗号分隔，单位 s）</view><textarea v-model="t2m.T10_avg_s" :maxlength="-1" placeholder="例如：17.0158,17.6387,17.9340,18.5316,19.3818" /></view>
     </view>
 
     <view class="section">
       <view class="title">v²-x² 数据</view>
-      <view class="field"><view class="label">x_cm（逗号分隔，位移，单位 cm）</view><textarea v-model="v2x2.x_cm" placeholder="例如：0,4,6,8,10,12,14,16,18" /></view>
-      <view class="field"><view class="label">v_avg_cms（逗号分隔，速度平均值，单位 cm/s）</view><textarea v-model="v2x2.v_avg_cms" placeholder="例如：77.34,72.47,71.17,69.17,63.92,57.30,49.67,41.67,29.70" /></view>
+      <view class="field"><view class="label">位移（逗号分隔，单位 cm）</view><textarea v-model="v2x2.x_cm" :maxlength="-1" placeholder="例如：0,4,6,8,10,12,14,16,18" /></view>
+      <view class="field"><view class="label">速度平均值（逗号分隔，单位 cm/s）</view><textarea v-model="v2x2.v_avg_cms" :maxlength="-1" placeholder="例如：77.34,72.47,71.17,69.17,63.92,57.30,49.67,41.67,29.70" /></view>
     </view>
 
     <button class="primary" @click="onSubmit">生成图像</button>
@@ -123,12 +123,12 @@ export default {
 
 <style>
 .page { padding: 24rpx; }
-.section { margin-bottom: 24rpx; background: #fff; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
+.section { margin-bottom: 24rpx; background: #ffb69d; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .title { font-size: 28rpx; margin-bottom: 16rpx; }
 .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
-textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; }
-input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; }
+textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
+input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; background: #fff; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }

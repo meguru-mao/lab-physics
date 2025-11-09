@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <view class="section">
-      <view class="title">密立根油滴数据（两行三列，共 6 个输入框）</view>
+      <view class="title">密立根油滴数据（上下数据位置需要对应）</view>
       <view class="label strong">第一行：ni（正整数）</view>
       <view class="grid-3">
         <input v-for="(v, i) in niArr" :key="'ni'+i" v-model="niArr[i]" type="number" placeholder="ni" />
@@ -116,12 +116,12 @@ export default {
 
 <style>
 .page { padding: 24rpx; }
-.section { margin-bottom: 24rpx; background: #fff; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
+.section { margin-bottom: 24rpx; background: #ffb69d; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .title { font-size: 28rpx; margin-bottom: 16rpx; }
 .label { font-size: 24rpx; color: #666; margin: 8rpx 0; }
 .label.strong { color: #333; font-weight: 600; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 16rpx; }
-input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; }
+input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; background: #fff; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }
