@@ -1,0 +1,21 @@
+# 忽略本地临时与无需打包的文件，减少镜像体积
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.tmp
+
+# 本地环境文件
+.env
+.env.*
+
+# 虚拟环境与 IDE
+venv/
+.venv/
+.vscode/
+
+# 运行时生成的数据（云托管应挂载数据卷到 /app/data）
+data/
+
+# Git 目录（若存在）
+.git/
