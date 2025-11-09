@@ -81,6 +81,21 @@ export default {
     }
   },
   methods: {
+    toWxFileFromDataUri(dataUri, prefix = 'fiber') {
+      return new Promise((resolve, reject) => {
+        // #ifdef MP-WEIXIN
+        try {
+          const base64 = String(dataUri || '').split(',')[1]
+          const filePath = `${wx.env.USER_DATA_PATH}/${prefix}_${Date.now()}_${Math.floor(Math.random()*1000)}.png`
+          const fs = wx.getFileSystemManager()
+          fs.writeFile({ filePath, data: base64, encoding: 'base64', success: () => resolve(filePath), fail: reject })
+        } catch (e) { reject(e) }
+        // #endif
+        // #ifndef MP-WEIXIN
+        resolve(dataUri)
+        // #endif
+      })
+    },
     onTypeChange(e) {
       const v = e.detail && e.detail.value
       if (v) this.plotType = v
@@ -126,18 +141,33 @@ export default {
       }
       try {
         const res = await apiRequest({ url: '/api/plots/fiber', method: 'POST', data: Object.assign({}, payload, { return_data_uri: IS_PROD }) })
-        const imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
+        let imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
+        // #ifdef MP-WEIXIN
+        if (imgs && imgs.length && String(imgs[0]).startsWith('data:')) {
+          try {
+            const files = await Promise.all(imgs.map((d) => this.toWxFileFromDataUri(d)))
+            imgs = files
+          } catch (e) {}
+        }
+        // #endif
         this.images = imgs
         if (!this.images.length) uni.showToast({ title: '未返回图像', icon: 'none' })
       } catch (e) {}
     },
     fullUrl(u) {
       if (!u) return ''
-      return u.startsWith('data:') ? u : (u.startsWith('http') ? u : (API_BASE + u))
+      if (typeof u === 'string' && (u.startsWith('data:') || u.startsWith('wxfile://') || u.startsWith('/'))) return u
+      return u.startsWith('http') ? u : (API_BASE + u)
     },
     downloadImage(u) {
       const url = this.fullUrl(u)
       if (!url) return
+      if (url.startsWith('wxfile://')) {
+        // #ifdef MP-WEIXIN
+        wx.saveImageToPhotosAlbum({ filePath: url, success: () => uni.showToast({ title: '已保存到相册' }) })
+        // #endif
+        return
+      }
       if (url.startsWith('data:')) {
         // #ifdef MP-WEIXIN
         try {
