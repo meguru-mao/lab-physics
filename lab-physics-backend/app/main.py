@@ -3,6 +3,7 @@ import base64
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect
 from .config import settings
 from .database import Base, engine, get_db
 from .schemas import (
@@ -38,6 +39,22 @@ app.mount("/static", StaticFiles(directory="data"), name="static")
 
 @app.on_event("startup")
 def on_startup():
+    # 若历史环境中存在旧表名 users 而非 user_info，则在启动时自动重命名
+    try:
+        insp = inspect(engine)
+        tables = insp.get_table_names()
+        if "users" in tables and "user_info" not in tables:
+            with engine.begin() as conn:
+                backend = engine.url.get_backend_name()
+                if backend.startswith("mysql"):
+                    conn.exec_driver_sql("RENAME TABLE users TO user_info")
+                else:
+                    # SQLite 等其他后端的重命名语句
+                    conn.exec_driver_sql("ALTER TABLE users RENAME TO user_info")
+    except Exception:
+        # 启动阶段重命名失败不阻塞服务，后续依然尝试建表
+        pass
+
     # 自动建表（不存在则创建）
     Base.metadata.create_all(bind=engine)
 

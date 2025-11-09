@@ -1,7 +1,7 @@
 -- 数据库：lab_physics
--- 用户表，仅包含需求字段
+-- 用户信息表（线上要求表名为 user_info）
 
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE IF NOT EXISTS `user_info` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `openid` VARCHAR(64) NOT NULL,

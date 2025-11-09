@@ -40,14 +40,14 @@ JWT_SECRET=粘贴你生成的随机字符串
 
 ## 数据库结构
 
-仅需一个用户表：
+仅需一个用户信息表（user_info）：
 
 - `user_id`：主键，自增
 - `created_at`：创建时间
 - `openid`：微信用户 openid，唯一
 - `role`：用户权限（`normal` 或 `admin`）
 
-表结构在 `app/models.py` 中定义，应用启动时自动创建（不存在则创建）。
+表结构在 `app/models.py` 中定义，应用启动时自动创建（不存在则创建）。若历史版本存在旧表名 `users`，应用会在启动时自动将其重命名为 `user_info`。
 
 ## MySQL 数据库创建详解
 

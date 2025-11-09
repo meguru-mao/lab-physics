@@ -4,7 +4,8 @@ from .database import Base
 
 
 class User(Base):
-    __tablename__ = "users"
+    # 线上环境要求使用表名 user_info
+    __tablename__ = "user_info"
     __table_args__ = (
         UniqueConstraint("openid", name="uq_user_openid"),
     )
