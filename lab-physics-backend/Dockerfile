@@ -16,6 +16,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk \
     fontconfig \
+    fonts-wqy-zenhei \
+    fonts-wqy-microhei \
     && fc-cache -f -v \
     && rm -rf /var/lib/apt/lists/*
 
