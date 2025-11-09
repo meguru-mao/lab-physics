@@ -29,10 +29,32 @@ export default {
       ]
     }
   },
+  onLoad() {
+    // 仅在微信小程序端隐藏左上角的「返回/主页」按钮，保留系统导航栏
+    // 避免用户回退到登录页
+    // #ifdef MP-WEIXIN
+    try {
+      if (typeof wx !== 'undefined' && wx.hideHomeButton) {
+        wx.hideHomeButton()
+      }
+    } catch (e) {
+      // ignore
+    }
+    // #endif
+  },
   methods: {
     enter(item) {
-      // 暂未实现具体实验页面，后续跳转到各实验模块
-      uni.showToast({ title: `进入：${item.name}`, icon: 'none' })
+      const name = item.name
+      let url = ''
+      if (name === '光纤传感与通讯') url = '/pages/experiments/fiber'
+      else if (name === '弗兰克赫兹') url = '/pages/experiments/frank'
+      else if (name === '密里根油滴') url = '/pages/experiments/millikan'
+      else if (name === '力学综合实验' || name === '力学实验') url = '/pages/experiments/mechanics'
+      if (url) {
+        uni.navigateTo({ url })
+      } else {
+        uni.showToast({ title: `暂未实现：${name}`, icon: 'none' })
+      }
     },
     goAdmin() {
       uni.navigateTo({ url: '/pages/admin/index' })

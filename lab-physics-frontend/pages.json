@@ -9,6 +9,34 @@
       }
     },
     {
+      "path": "pages/experiments/fiber",
+      "style": {
+        "navigationBarTitleText": "光纤传感与通讯",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/experiments/frank",
+      "style": {
+        "navigationBarTitleText": "弗兰克赫兹",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/experiments/millikan",
+      "style": {
+        "navigationBarTitleText": "密里根油滴",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/experiments/mechanics",
+      "style": {
+        "navigationBarTitleText": "力学实验",
+        "navigationStyle": "default"
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "巡图大物",

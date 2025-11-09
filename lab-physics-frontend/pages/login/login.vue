@@ -9,8 +9,8 @@
       <!-- 标语 -->
       <view class="slogan">别让绘图成为实验报告的障碍</view>
 
-      <!-- 微信登录按钮 -->
-      <button class="wx-btn" @click="onLogin" :disabled="!agree">微信登录</button>
+      <!-- 微信登录按钮：始终保持绿色，点击时由逻辑判断是否允许登录 -->
+      <button class="wx-btn" @click="onLogin">微信登录</button>
 
       <!-- 协议勾选 -->
       <view class="agree">
