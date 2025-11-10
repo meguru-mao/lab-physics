@@ -88,7 +88,8 @@ class PlotImagesResponse(BaseModel):
 # -------------------------- 新增：四个实验的输入 Schemas --------------------------
 
 class ThermalRequest(BaseModel):
-    temperatures: List[float] = Field(..., description="温度数组（℃）")
+    # 温度允许不传，后端默认使用 55,60,65,70,75,80
+    temperatures: Optional[List[float]] = Field(None, description="温度数组（°C），不传则使用默认 [55,60,65,70,75,80]")
     pt100_resistance: List[float] = Field(..., description="Pt100 电阻数组（Ω）")
     ntc_resistance: List[float] = Field(..., description="NTC 热敏电阻数组（Ω）")
     return_data_uri: Optional[bool] = Field(False, description="是否返回 data URI 以便前端直接显示")

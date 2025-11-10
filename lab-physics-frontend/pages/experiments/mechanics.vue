@@ -51,7 +51,8 @@ export default {
         // #endif
       })
     },
-    parseNums(str) { return (str || '').split(/[,\s]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    // 支持英文/中文逗号
+    parseNums(str) { return (str || '').split(/[,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
       const m0_g = parseFloat(this.t2m.m0_g)
       const weights_g = this.parseNums(this.t2m.weights_g)

@@ -43,7 +43,8 @@ export default {
     }
   },
   methods: {
-    parseNums(str) { return (str || '').split(/[\,\s]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    // 支持英文/中文逗号
+    parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
       const f = this.form
       const required = ['dark_voltage','dark_current','light_voltage','light_current','relative_intensity','light_power','short_circuit_current','open_circuit_voltage']

@@ -3,12 +3,12 @@
     <view class="section">
       <view class="title">光电器件性能数据（10子图合成一张）</view>
       <view class="label strong">LED</view>
-      <view class="field"><view class="label">I (mA)</view><textarea v-model="form.led_I" :maxlength="-1" placeholder="例如：0.4,5,10,15,20,25,30" /></view>
+      <view class="label">LED 电流 I 固定为 0,5,10,15,20,25,30（7 点），无需填写</view>
       <view class="field"><view class="label">V (V)</view><textarea v-model="form.led_V" :maxlength="-1" placeholder="例如：0.13,0.88,0.92,0.92,0.97,1.00,1.02" /></view>
       <view class="field"><view class="label">P (μW)</view><textarea v-model="form.led_P" :maxlength="-1" placeholder="例如：0.1,1.669,2.899,3.931,4.846,5.659,6.385" /></view>
 
       <view class="label strong">LD（含阈值线性拟合）</view>
-      <view class="field"><view class="label">I (mA)</view><textarea v-model="form.ld_I" :maxlength="-1" placeholder="例如：0.5,3,6,9,12,15,18,21" /></view>
+      <view class="label">LD 电流 I 固定为 0,3,6,9,12,15,18,21（8 点），无需填写</view>
       <view class="field"><view class="label">V (V)</view><textarea v-model="form.ld_V" :maxlength="-1" placeholder="例如：0.14,0.92,0.97,1.00,1.03,1.07,1.10,1.13" /></view>
       <view class="field"><view class="label">P (μW)</view><textarea v-model="form.ld_P" :maxlength="-1" placeholder="例如：0.0001,0.06793,0.246,17.4,68.53,121.2,172.6,224.8" /></view>
       <view class="field"><view class="label">拟合起始索引（默认4）</view><input v-model="form.ld_linear_start_idx" type="number" placeholder="4" /></view>
@@ -48,8 +48,8 @@ export default {
   data() {
     return {
       form: {
-        led_I: '', led_V: '', led_P: '',
-        ld_I: '', ld_V: '', ld_P: '', ld_linear_start_idx: '4',
+        led_V: '', led_P: '',
+        ld_V: '', ld_P: '', ld_linear_start_idx: '4',
         pd_L: '', pd_I_L: '', pd_V: '', pd_I_V: '', pd_wl: '', pd_I_wl: '',
         pt_L: '', pt_I_L: '', pt_V: '', pt_I_V: '', pt_wl: '', pt_I_wl: ''
       },
@@ -57,16 +57,23 @@ export default {
     }
   },
   methods: {
-    parseNums(str) { return (str || '').split(/[\,\s]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    // 支持英文/中文逗号
+    parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
       const f = this.form
-      const required = ['led_I','led_V','led_P','ld_I','ld_V','ld_P','pd_L','pd_I_L','pd_V','pd_I_V','pd_wl','pd_I_wl','pt_L','pt_I_L','pt_V','pt_I_V','pt_wl','pt_I_wl']
+      const required = ['led_V','led_P','ld_V','ld_P','pd_L','pd_I_L','pd_V','pd_I_V','pd_wl','pd_I_wl','pt_L','pt_I_L','pt_V','pt_I_V','pt_wl','pt_I_wl']
       for (const k of required) {
         if (!f[k] || !this.parseNums(f[k]).length) { uni.showToast({ title: `请填写 ${k} 数据`, icon: 'none' }); return }
       }
+      const led_I = [0,5,10,15,20,25,30]
+      const ld_I = [0,3,6,9,12,15,18,21]
+      const led_V = this.parseNums(f.led_V), led_P = this.parseNums(f.led_P)
+      if (!(led_V.length === led_P.length && led_V.length === led_I.length)) { uni.showToast({ title: 'LED 的 V 与 P 长度需与固定 I 长度一致（7 项）', icon: 'none' }); return }
+      const ld_V = this.parseNums(f.ld_V), ld_P = this.parseNums(f.ld_P)
+      if (!(ld_V.length === ld_P.length && ld_V.length === ld_I.length)) { uni.showToast({ title: 'LD 的 V 与 P 长度需与固定 I 长度一致（8 项）', icon: 'none' }); return }
       const payload = {
-        led_I: this.parseNums(f.led_I), led_V: this.parseNums(f.led_V), led_P: this.parseNums(f.led_P),
-        ld_I: this.parseNums(f.ld_I), ld_V: this.parseNums(f.ld_V), ld_P: this.parseNums(f.ld_P), ld_linear_start_idx: parseInt(f.ld_linear_start_idx || '4'),
+        led_I, led_V, led_P,
+        ld_I, ld_V, ld_P, ld_linear_start_idx: parseInt(f.ld_linear_start_idx || '4'),
         pd_L: this.parseNums(f.pd_L), pd_I_L: this.parseNums(f.pd_I_L), pd_V: this.parseNums(f.pd_V), pd_I_V: this.parseNums(f.pd_I_V), pd_wl: this.parseNums(f.pd_wl), pd_I_wl: this.parseNums(f.pd_I_wl),
         pt_L: this.parseNums(f.pt_L), pt_I_L: this.parseNums(f.pt_I_L), pt_V: this.parseNums(f.pt_V), pt_I_V: this.parseNums(f.pt_I_V), pt_wl: this.parseNums(f.pt_wl), pt_I_wl: this.parseNums(f.pt_I_wl),
         return_data_uri: IS_PROD

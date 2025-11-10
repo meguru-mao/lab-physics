@@ -3,11 +3,36 @@
     <view class="section">
       <view class="title">超声波实验（含自由落体、三组匀变速、牛顿第二定律）</view>
       <view class="label strong">自由落体</view>
-      <view class="field"><view class="label">时间 t (s)</view><textarea v-model="form.t_free_fall" :maxlength="-1" placeholder="例如：0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40" /></view>
-      <view class="field"><view class="label">速度 v1 (m/s)</view><textarea v-model="form.v_free_fall_1" :maxlength="-1" placeholder="例如：0.65,1.13,1.63,2.10,2.64,3.10,3.55,4.01" /></view>
-      <view class="field"><view class="label">速度 v2 (m/s，可选)</view><textarea v-model="form.v_free_fall_2" :maxlength="-1" placeholder="可选" /></view>
-      <view class="field"><view class="label">速度 v3 (m/s 可选)</view><textarea v-model="form.v_free_fall_3" :maxlength="-1" placeholder="可选" /></view>
-      <view class="field"><view class="label">速度 v4 (m/s 可选)</view><textarea v-model="form.v_free_fall_4" :maxlength="-1" placeholder="可选" /></view>
+      <view class="label">时间 t 固定为 0.05 ~ 0.40（步长 0.05，共 8 点），无需填写</view>
+      <view class="label">请填写四组速度（每组 8 个），采用两行四列的输入布局</view>
+      <view class="sub-title">速度组 v1</view>
+      <view class="grid-4 group-row">
+        <view class="cell" v-for="(v, i) in vff1Arr" :key="'v1_'+i">
+          <input v-model="vff1Arr[i]" type="digit" placeholder="v1" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
+      </view>
+      <view class="sub-title">速度组 v2</view>
+      <view class="grid-4 group-row">
+        <view class="cell" v-for="(v, i) in vff2Arr" :key="'v2_'+i">
+          <input v-model="vff2Arr[i]" type="digit" placeholder="v2" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
+      </view>
+      <view class="sub-title">速度组 v3</view>
+      <view class="grid-4 group-row">
+        <view class="cell" v-for="(v, i) in vff3Arr" :key="'v3_'+i">
+          <input v-model="vff3Arr[i]" type="digit" placeholder="v3" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
+      </view>
+      <view class="sub-title">速度组 v4</view>
+      <view class="grid-4 group-row">
+        <view class="cell" v-for="(v, i) in vff4Arr" :key="'v4_'+i">
+          <input v-model="vff4Arr[i]" type="digit" placeholder="v4" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
+      </view>
 
       <view class="label strong">匀变速运动 第1组</view>
       <view class="field"><view class="label">时间 t1 (s)</view><textarea v-model="form.t1" :maxlength="-1" /></view>
@@ -52,8 +77,13 @@ import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
 export default {
   data() {
     return {
+      // 自由落体：固定时间 + 四组速度数组（两行四列共 8 个）
+      tFreeFixed: Array.from({ length: 8 }, (_, i) => Number(((i + 1) * 0.05).toFixed(2))),
+      vff1Arr: Array(8).fill(''),
+      vff2Arr: Array(8).fill(''),
+      vff3Arr: Array(8).fill(''),
+      vff4Arr: Array(8).fill(''),
       form: {
-        t_free_fall: '', v_free_fall_1: '', v_free_fall_2: '', v_free_fall_3: '', v_free_fall_4: '',
         t1: '', v1_1: '', v1_2: '', v1_3: '', v1_4: '',
         t2: '', v2_1: '', v2_2: '', v2_3: '', v2_4: '',
         t3: '', v3_1: '', v3_2: '', v3_3: '', v3_4: '',
@@ -63,19 +93,17 @@ export default {
     }
   },
   methods: {
-    parseNums(str) { return (str || '').split(/[\,\s]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    // 支持英文/中文逗号
+    parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    toNums(arr) { return arr.map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
       const f = this.form
-      // 基本校验：必填字段
-      const required = ['t_free_fall','v_free_fall_1','t1','v1_1','v1_2','v1_3','v1_4','t2','v2_1','v2_2','v2_3','v2_4','t3','v3_1','v3_2','v3_3','v3_4','m','a_measured']
-      for (const k of required) { if (!f[k] || !this.parseNums(f[k]).length) { uni.showToast({ title: `请填写 ${k} 数据`, icon: 'none' }); return } }
-      // 自由落体长度一致
-      const t_free = this.parseNums(f.t_free_fall)
-      const vf1 = this.parseNums(f.v_free_fall_1)
-      if (vf1.length !== t_free.length) { uni.showToast({ title: 'v_free_fall_1 与 t_free_fall 长度需一致', icon: 'none' }); return }
-      for (const opt of ['v_free_fall_2','v_free_fall_3','v_free_fall_4']) {
-        const v = this.parseNums(f[opt]); if (v.length && v.length !== t_free.length) { uni.showToast({ title: `${opt} 长度需与 t_free_fall 一致`, icon: 'none' }); return }
+      // 自由落体：四组速度需各填满 8 个数字
+      const v1 = this.toNums(this.vff1Arr), v2 = this.toNums(this.vff2Arr), v3 = this.toNums(this.vff3Arr), v4 = this.toNums(this.vff4Arr)
+      if (v1.length !== 8 || v2.length !== 8 || v3.length !== 8 || v4.length !== 8) {
+        uni.showToast({ title: '请填写完整的 4 组速度，每组 8 个数据', icon: 'none' }); return
       }
+      const t_free = this.tFreeFixed.slice()
       // 三组匀变速长度一致
       const t1 = this.parseNums(f.t1), t2 = this.parseNums(f.t2), t3 = this.parseNums(f.t3)
       for (const [tArr, keys] of [[t1,['v1_1','v1_2','v1_3','v1_4']], [t2,['v2_1','v2_2','v2_3','v2_4']], [t3,['v3_1','v3_2','v3_3','v3_4']]]) {
@@ -84,10 +112,10 @@ export default {
 
       const payload = {
         t_free_fall: t_free,
-        v_free_fall_1: vf1,
-        v_free_fall_2: this.parseNums(f.v_free_fall_2),
-        v_free_fall_3: this.parseNums(f.v_free_fall_3),
-        v_free_fall_4: this.parseNums(f.v_free_fall_4),
+        v_free_fall_1: v1,
+        v_free_fall_2: v2,
+        v_free_fall_3: v3,
+        v_free_fall_4: v4,
         t1, v1_1: this.parseNums(f.v1_1), v1_2: this.parseNums(f.v1_2), v1_3: this.parseNums(f.v1_3), v1_4: this.parseNums(f.v1_4),
         t2, v2_1: this.parseNums(f.v2_1), v2_2: this.parseNums(f.v2_2), v2_3: this.parseNums(f.v2_3), v2_4: this.parseNums(f.v2_4),
         t3, v3_1: this.parseNums(f.v3_1), v3_2: this.parseNums(f.v3_2), v3_3: this.parseNums(f.v3_3), v3_4: this.parseNums(f.v3_4),
@@ -150,6 +178,12 @@ export default {
 .image-card { margin-top: 16rpx; }
 .image-card image { width: 100%; }
 textarea { width: 100%; min-height: 100rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
+.sub-title { margin-top: 8rpx; font-size: 24rpx; color: #555; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.group-row { margin-bottom: 12rpx; }
+.cell { position: relative; }
+input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx 0 44rpx; box-sizing: border-box; background: #fff; }
+.cell-index { position: absolute; top: 8rpx; left: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 </style>

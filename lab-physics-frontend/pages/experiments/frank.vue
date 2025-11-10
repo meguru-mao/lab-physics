@@ -67,8 +67,9 @@ export default {
         // #endif
       })
     },
+    // 支持英文/中文逗号
     parseNums(str) {
-      return (str || '').split(/[,\s]+/).map(s => parseFloat(s)).filter(v => !isNaN(v))
+      return (str || '').split(/[,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v))
     },
     addGroup() { this.groups.push({ vg1: '', vg2a: '', vg2p: '', currents: '' }) },
     removeGroup(i) { this.groups.splice(i, 1) },

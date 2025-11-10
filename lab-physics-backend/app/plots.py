@@ -301,7 +301,8 @@ def plot_thermal(user_id: int, temperatures: List[float], pt100_resistance: List
     t_arr = np.array(temperatures, dtype=float)
     pt_arr = np.array(pt100_resistance, dtype=float)
     plt.plot(t_arr, pt_arr, 'b-o', linewidth=2, markersize=6, label='Pt100电阻')
-    plt.xlabel('温度 (℃)')
+    # 使用更通用的温度符号，避免部分环境下 "℃" 显示缺失
+    plt.xlabel('温度 (°C)')
     plt.ylabel('电阻 (Ω)')
     plt.title('Pt100金属电阻随温度变化曲线', fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')
@@ -314,7 +315,8 @@ def plot_thermal(user_id: int, temperatures: List[float], pt100_resistance: List
     plt.figure(figsize=_new_fig_size_cm(20, 12))
     ntc_arr = np.array(ntc_resistance, dtype=float)
     plt.plot(t_arr, ntc_arr, 'r-s', linewidth=2, markersize=6, label='NTC热敏电阻')
-    plt.xlabel('温度 (℃)')
+    # 使用更通用的温度符号，避免部分环境下 "℃" 显示缺失
+    plt.xlabel('温度 (°C)')
     plt.ylabel('电阻 (Ω)')
     plt.title('NTC热敏电阻随温度变化曲线', fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')

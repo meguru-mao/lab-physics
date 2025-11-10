@@ -3,12 +3,18 @@
     <view class="section">
       <view class="title">密立根油滴数据（上下数据位置需要对应）</view>
       <view class="label strong">第一行：ni（正整数）</view>
-      <view class="grid-3">
-        <input v-for="(v, i) in niArr" :key="'ni'+i" v-model="niArr[i]" type="number" placeholder="ni" />
+      <view class="grid-3 group-row">
+        <view class="cell" v-for="(v, i) in niArr" :key="'ni'+i">
+          <input v-model="niArr[i]" type="number" placeholder="ni" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
       </view>
       <view class="label strong">第二行：qi（x10^-19 C）</view>
-      <view class="grid-3">
-        <input v-for="(v, i) in qiArr" :key="'qi'+i" v-model="qiArr[i]" type="digit" placeholder="qi" />
+      <view class="grid-3 group-row">
+        <view class="cell" v-for="(v, i) in qiArr" :key="'qi'+i">
+          <input v-model="qiArr[i]" type="digit" placeholder="qi" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
       </view>
     </view>
     <button class="primary" @click="onSubmit">生成图像</button>
@@ -120,8 +126,11 @@ export default {
 .title { font-size: 28rpx; margin-bottom: 16rpx; }
 .label { font-size: 24rpx; color: #666; margin: 8rpx 0; }
 .label.strong { color: #333; font-weight: 600; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 16rpx; }
-input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; background: #fff; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.group-row { margin-bottom: 12rpx; }
+.cell { position: relative; }
+input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx 0 44rpx; box-sizing: border-box; background: #fff; }
+.cell-index { position: absolute; top: 8rpx; left: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }

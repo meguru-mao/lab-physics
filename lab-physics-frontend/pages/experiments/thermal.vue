@@ -2,17 +2,19 @@
   <view class="page">
     <view class="section">
       <view class="title">热学综合实验数据</view>
-      <view class="field">
-        <view class="label">温度 Temperatures (℃，逗号分隔)</view>
-        <textarea v-model="form.temperatures" :maxlength="-1" placeholder="例如：55,60,65,70,75,80" />
+      <view class="label strong">温度固定为 55, 60, 65, 70, 75, 80（无需填写）</view>
+      <view class="label">请按两行三列填写对应的 Pt100 与 NTC 电阻值</view>
+      <view class="grid-3 group-row">
+        <view class="cell" v-for="(v, i) in pt100Arr" :key="'pt'+i">
+          <input v-model="pt100Arr[i]" type="digit" placeholder="Pt100 电阻" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
       </view>
-      <view class="field">
-        <view class="label">Pt100 电阻 (Ω，逗号分隔)</view>
-        <textarea v-model="form.pt100_resistance" :maxlength="-1" placeholder="例如：126.56,128.55,130.71,132.85,134.97,137.09" />
-      </view>
-      <view class="field">
-        <view class="label">NTC 电阻 (Ω，逗号分隔)</view>
-        <textarea v-model="form.ntc_resistance" :maxlength="-1" placeholder="例如：2883,2424,2027,1701,1435,1217" />
+      <view class="grid-3 group-row">
+        <view class="cell" v-for="(v, i) in ntcArr" :key="'ntc'+i">
+          <input v-model="ntcArr[i]" type="digit" placeholder="NTC 电阻" />
+          <text class="cell-index">{{ i + 1 }}</text>
+        </view>
       </view>
     </view>
     <button class="primary" @click="onSubmit">生成图像</button>
@@ -31,19 +33,23 @@ import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
 export default {
   data() {
     return {
-      form: { temperatures: '', pt100_resistance: '', ntc_resistance: '' },
+      // 固定温度序列（无需用户输入）
+      tempsFixed: [55, 60, 65, 70, 75, 80],
+      // 两行三列，共 6 个输入框
+      pt100Arr: Array(6).fill(''),
+      ntcArr: Array(6).fill(''),
       images: []
     }
   },
   methods: {
-    parseNums(str) { return (str || '').split(/[\,\s]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    // 支持英文/中文逗号
+    parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
+    toNums(arr) { return arr.map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
-      const temps = this.parseNums(this.form.temperatures)
-      const pt100 = this.parseNums(this.form.pt100_resistance)
-      const ntc = this.parseNums(this.form.ntc_resistance)
-      if (!temps.length || !pt100.length || !ntc.length || !(temps.length === pt100.length && temps.length === ntc.length)) {
-        uni.showToast({ title: '温度、Pt100、NTC 需非空且长度一致', icon: 'none' }); return
-      }
+      const temps = this.tempsFixed.slice()
+      const pt100 = this.toNums(this.pt100Arr)
+      const ntc = this.toNums(this.ntcArr)
+      if (pt100.length !== 6 || ntc.length !== 6) { uni.showToast({ title: '请填写完整的 6 个 Pt100 与 6 个 NTC 电阻值', icon: 'none' }); return }
       try {
         const res = await apiRequest({ url: '/api/plots/thermal', method: 'POST', data: { temperatures: temps, pt100_resistance: pt100, ntc_resistance: ntc, return_data_uri: IS_PROD } })
         let imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
@@ -99,9 +105,14 @@ export default {
 .page { padding: 24rpx; }
 .section { margin-bottom: 24rpx; background: #ffb69d; border-radius: 16rpx; padding: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .title { font-size: 28rpx; margin-bottom: 16rpx; }
-.field { margin-bottom: 12rpx; }
+ .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
 textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.group-row { margin-bottom: 12rpx; }
+.cell { position: relative; }
+input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx 0 44rpx; box-sizing: border-box; background: #fff; }
+.cell-index { position: absolute; top: 8rpx; left: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }

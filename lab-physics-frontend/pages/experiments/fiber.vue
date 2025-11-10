@@ -103,7 +103,7 @@ export default {
     },
     parseNums(str) {
       return (str || '')
-        .split(/[,\s]+/)
+        .split(/[,\s，]+/)
         .map(s => parseFloat(s))
         .filter(v => !isNaN(v))
     },

@@ -158,12 +158,14 @@ def api_plot_frank_hertz(payload: FrankHertzRequest, user=Depends(get_current_us
 
 @app.post("/api/plots/thermal", response_model=PlotImagesResponse)
 def api_plot_thermal(payload: ThermalRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    # 默认温度序列：55,60,65,70,75,80（若前端未提供）
+    temperatures = payload.temperatures if payload.temperatures else [55.0, 60.0, 65.0, 70.0, 75.0, 80.0]
     # 基本校验
-    if not (payload.temperatures and payload.pt100_resistance and payload.ntc_resistance):
-        raise HTTPException(status_code=400, detail="temperatures / pt100_resistance / ntc_resistance 不能为空")
-    if not (len(payload.temperatures) == len(payload.pt100_resistance) == len(payload.ntc_resistance)):
+    if not (payload.pt100_resistance and payload.ntc_resistance):
+        raise HTTPException(status_code=400, detail="pt100_resistance / ntc_resistance 不能为空")
+    if not (len(temperatures) == len(payload.pt100_resistance) == len(payload.ntc_resistance)):
         raise HTTPException(status_code=400, detail="三个数组长度需一致")
-    results = plot_thermal(user.user_id, payload.temperatures, payload.pt100_resistance, payload.ntc_resistance)
+    results = plot_thermal(user.user_id, temperatures, payload.pt100_resistance, payload.ntc_resistance)
     try:
         create_plot_records(db, user.user_id, 'thermal', results)
     except Exception:
