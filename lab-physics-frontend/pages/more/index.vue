@@ -30,7 +30,7 @@ export default {
     joinUs() {
       uni.showModal({
         title: '加入我（们）',
-        content: '内容待定。欢迎通过页面中的联系方式或项目仓库与作者联系。',
+        content: '欢迎通过邮箱 huiwen.mao@pondrobotics.com 联系作者',
         confirmText: '知道了',
         showCancel: true
       })
@@ -38,7 +38,7 @@ export default {
     feedback() {
       uni.showModal({
         title: '反馈与建议',
-        content: '内容待定。您可以通过 GitHub Issue 或邮件提出建议与反馈。',
+        content: '您可以在github上找到该开源项目，项目地址 https://github.com/meguru-mao/lab-physics.git\n通过 issue 提出您宝贵的建议，也可以通过邮箱联系作者\nhuiwen.mao@pondrobotics.com',
         confirmText: '好的',
         showCancel: false
       })
