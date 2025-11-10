@@ -9,6 +9,28 @@
       }
     },
     {
+      "path": "pages/more/index",
+      "style": {
+        "navigationBarTitleText": "了解更多",
+        "navigationStyle": "default",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    {
+      "path": "pages/more/plan",
+      "style": {
+        "navigationBarTitleText": "后续计划",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/more/author",
+      "style": {
+        "navigationBarTitleText": "作者与权益",
+        "navigationStyle": "default"
+      }
+    },
+    {
       "path": "pages/experiments/fiber",
       "style": {
         "navigationBarTitleText": "光纤传感与通讯",
@@ -83,6 +105,22 @@
     "navigationBarTitleText": "巡图大物",
     "navigationBarBackgroundColor": "#FFFFFF",
     "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#07C160",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "主页"
+      },
+      {
+        "pagePath": "pages/more/index",
+        "text": "更多"
+      }
+    ]
   },
   "uniIdRouter": {}
 }
