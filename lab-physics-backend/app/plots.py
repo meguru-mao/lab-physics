@@ -9,7 +9,7 @@
 
 import os
 import uuid
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 import matplotlib
