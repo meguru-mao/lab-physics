@@ -37,6 +37,34 @@
       }
     },
     {
+      "path": "pages/experiments/ultrasound",
+      "style": {
+        "navigationBarTitleText": "超声波实验",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/experiments/solar-cell",
+      "style": {
+        "navigationBarTitleText": "太阳能电池特性",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/experiments/thermal",
+      "style": {
+        "navigationBarTitleText": "热学综合实验",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/experiments/photo-devices",
+      "style": {
+        "navigationBarTitleText": "光电器件性能",
+        "navigationStyle": "default"
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "巡图大物",

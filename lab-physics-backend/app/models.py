@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey
 from .database import Base
 
 
@@ -14,3 +14,13 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     openid = Column(String(64), nullable=False, index=True)
     role = Column(String(20), default="normal", nullable=False)
+
+
+class PlotRecord(Base):
+    __tablename__ = "plot_records"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("user_info.user_id"), nullable=False, index=True)
+    experiment = Column(String(64), nullable=False)
+    file_path = Column(String(255), nullable=False)
+    url = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

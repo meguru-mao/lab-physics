@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import glob
 from scipy.interpolate import CubicSpline
+from scipy import optimize, stats
 
 
 def _ensure_dir(path: str):
@@ -287,3 +288,283 @@ def plot_mech_v2_x2(user_id: int, x_cm: List[float], v_avg_cms: List[float]) -> 
     plt.tight_layout()
     fpath, url = _save_fig(user_id, 'mechanics', 'mech_v2_x2')
     return fpath, url, omega, T_calc
+
+
+# -------------------------- 新增：热学综合实验 --------------------------
+def plot_thermal(user_id: int, temperatures: List[float], pt100_resistance: List[float], ntc_resistance: List[float]) -> List[Tuple[str, str]]:
+    """根据前端传入数据绘制 Pt100 与 NTC 两张曲线图。"""
+    _set_chinese_font()
+    results: List[Tuple[str, str]] = []
+
+    # Pt100 电阻-温度
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    t_arr = np.array(temperatures, dtype=float)
+    pt_arr = np.array(pt100_resistance, dtype=float)
+    plt.plot(t_arr, pt_arr, 'b-o', linewidth=2, markersize=6, label='Pt100电阻')
+    plt.xlabel('温度 (℃)')
+    plt.ylabel('电阻 (Ω)')
+    plt.title('Pt100金属电阻随温度变化曲线', fontweight='bold')
+    plt.grid(True, alpha=0.3, linestyle='--')
+    plt.legend(fontsize=10)
+    plt.xticks(t_arr)
+    plt.tight_layout()
+    results.append(_save_fig(user_id, 'thermal', 'Pt100_电阻温度变化'))
+
+    # NTC 电阻-温度
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    ntc_arr = np.array(ntc_resistance, dtype=float)
+    plt.plot(t_arr, ntc_arr, 'r-s', linewidth=2, markersize=6, label='NTC热敏电阻')
+    plt.xlabel('温度 (℃)')
+    plt.ylabel('电阻 (Ω)')
+    plt.title('NTC热敏电阻随温度变化曲线', fontweight='bold')
+    plt.grid(True, alpha=0.3, linestyle='--')
+    plt.legend(fontsize=10)
+    plt.xticks(t_arr)
+    plt.tight_layout()
+    results.append(_save_fig(user_id, 'thermal', 'NTC_电阻温度变化'))
+
+    return results
+
+
+# -------------------------- 新增：光电器件性能 --------------------------
+def plot_photo_devices(
+    user_id: int,
+    led_I: List[float], led_V: List[float], led_P: List[float],
+    ld_I: List[float], ld_V: List[float], ld_P: List[float], ld_linear_start_idx: int,
+    pd_L: List[float], pd_I_L: List[float], pd_V: List[float], pd_I_V: List[float], pd_wl: List[float], pd_I_wl: List[float],
+    pt_L: List[float], pt_I_L: List[float], pt_V: List[float], pt_I_V: List[float], pt_wl: List[float], pt_I_wl: List[float]
+) -> Tuple[str, str]:
+    """生成 2x5 的十张子图合并图。包含 LD 阈值线性拟合。"""
+    _set_chinese_font()
+    # 强制中文字体
+    font_prop = fm.FontProperties(family=matplotlib.rcParams.get('font.sans-serif')[0])
+    fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+    fig.suptitle('光电器件性能测试实验曲线', fontsize=16, fontweight='bold', fontproperties=font_prop)
+
+    led_I = np.array(led_I, dtype=float); led_V = np.array(led_V, dtype=float); led_P = np.array(led_P, dtype=float)
+    ld_I = np.array(ld_I, dtype=float); ld_V = np.array(ld_V, dtype=float); ld_P = np.array(ld_P, dtype=float)
+    pd_L = np.array(pd_L, dtype=float); pd_I_L = np.array(pd_I_L, dtype=float)
+    pd_V = np.array(pd_V, dtype=float); pd_I_V = np.array(pd_I_V, dtype=float)
+    pd_wl = np.array(pd_wl, dtype=float); pd_I_wl = np.array(pd_I_wl, dtype=float)
+    pt_L = np.array(pt_L, dtype=float); pt_I_L = np.array(pt_I_L, dtype=float)
+    pt_V = np.array(pt_V, dtype=float); pt_I_V = np.array(pt_I_V, dtype=float)
+    pt_wl = np.array(pt_wl, dtype=float); pt_I_wl = np.array(pt_I_wl, dtype=float)
+
+    # 子图1：LD P-I（含阈值线性拟合）
+    axes[0,0].scatter(ld_I, ld_P, color='red', label='实验数据')
+    start = max(0, min(int(ld_linear_start_idx), max(0, len(ld_I)-1)))
+    ld_I_linear = ld_I[start:]
+    ld_P_linear = ld_P[start:]
+    if len(ld_I_linear) >= 2:
+        k, b = np.polyfit(ld_I_linear, ld_P_linear, 1)
+        I_th = float(-b / k) if k != 0 else 0.0
+        I_fit = np.linspace(I_th, float(np.max(ld_I)) + 1, 50)
+        P_fit = k * I_fit + b
+        axes[0,0].plot(I_fit, P_fit, 'k--', label=f'线性拟合: P={k:.2f}I+{b:.2f}')
+        axes[0,0].axvline(x=I_th, color='green', linestyle=':', label=f'阈值电流={I_th:.2f}mA')
+    axes[0,0].set_xlabel('电流I (mA)'); axes[0,0].set_ylabel('功率P (μW)'); axes[0,0].set_title('LD P-I特性曲线'); axes[0,0].legend(); axes[0,0].grid(True, alpha=0.3)
+
+    # 子图2：LD I-V
+    axes[0,1].scatter(ld_V, ld_I, color='orange', label='实验数据')
+    axes[0,1].plot(ld_V, ld_I, 'orange', alpha=0.6)
+    axes[0,1].set_xlabel('电压V (V)'); axes[0,1].set_ylabel('电流I (mA)'); axes[0,1].set_title('LD I-V特性曲线'); axes[0,1].legend(); axes[0,1].grid(True, alpha=0.3)
+
+    # 子图3：LED P-I
+    axes[0,2].scatter(led_I, led_P, color='blue', label='实验数据')
+    axes[0,2].plot(led_I, led_P, 'blue', alpha=0.6)
+    axes[0,2].set_xlabel('电流I (mA)'); axes[0,2].set_ylabel('功率P (μW)'); axes[0,2].set_title('LED P-I特性曲线'); axes[0,2].legend(); axes[0,2].grid(True, alpha=0.3)
+
+    # 子图4：LED I-V
+    axes[0,3].scatter(led_V, led_I, color='purple', label='实验数据')
+    axes[0,3].plot(led_V, led_I, 'purple', alpha=0.6)
+    axes[0,3].set_xlabel('电压V (V)'); axes[0,3].set_ylabel('电流I (mA)'); axes[0,3].set_title('LED I-V特性曲线'); axes[0,3].legend(); axes[0,3].grid(True, alpha=0.3)
+
+    # 子图5：光敏二极管 L-I
+    axes[0,4].scatter(pd_L, pd_I_L, color='teal', label='实验数据')
+    axes[0,4].plot(pd_L, pd_I_L, 'teal', alpha=0.6)
+    axes[0,4].set_xlabel('照度L (Lx)'); axes[0,4].set_ylabel('电流I (μA)'); axes[0,4].set_title('光敏二极管光照特性曲线 (U=5V)'); axes[0,4].legend(); axes[0,4].grid(True, alpha=0.3)
+
+    # 子图6：光敏二极管 V-I
+    axes[1,0].scatter(pd_V, pd_I_V, color='brown', label='实验数据')
+    axes[1,0].plot(pd_V, pd_I_V, 'brown', alpha=0.6)
+    axes[1,0].set_xlabel('电压V (V)'); axes[1,0].set_ylabel('电流I (μA)'); axes[1,0].set_title('光敏二极管伏安特性曲线'); axes[1,0].legend(); axes[1,0].grid(True, alpha=0.3)
+
+    # 子图7：光敏二极管 光谱
+    axes[1,1].scatter(pd_wl, pd_I_wl, color='pink', label='实验数据')
+    axes[1,1].plot(pd_wl, pd_I_wl, 'pink', alpha=0.6)
+    axes[1,1].set_xlabel('波长λ (nm)'); axes[1,1].set_ylabel('电流I (μA)'); axes[1,1].set_title('光敏二极管光谱特性曲线 (30Lx)'); axes[1,1].legend(); axes[1,1].grid(True, alpha=0.3)
+
+    # 子图8：光敏三极管 L-I
+    axes[1,2].scatter(pt_L, pt_I_L, color='darkgreen', label='实验数据')
+    axes[1,2].plot(pt_L, pt_I_L, 'darkgreen', alpha=0.6)
+    axes[1,2].set_xlabel('照度L (Lx)'); axes[1,2].set_ylabel('电流I (mA)'); axes[1,2].set_title('光敏三极管光照特性曲线 (U=5V)'); axes[1,2].legend(); axes[1,2].grid(True, alpha=0.3)
+
+    # 子图9：光敏三极管 V-I
+    axes[1,3].scatter(pt_V, pt_I_V, color='darkblue', label='实验数据')
+    axes[1,3].plot(pt_V, pt_I_V, 'darkblue', alpha=0.6)
+    axes[1,3].set_xlabel('电压V (V)'); axes[1,3].set_ylabel('电流I (mA)'); axes[1,3].set_title('光敏三极管伏安特性曲线'); axes[1,3].legend(); axes[1,3].grid(True, alpha=0.3)
+
+    # 子图10：光敏三极管 光谱
+    axes[1,4].scatter(pt_wl, pt_I_wl, color='gray', label='实验数据')
+    axes[1,4].plot(pt_wl, pt_I_wl, 'gray', alpha=0.6)
+    axes[1,4].set_xlabel('波长λ (nm)'); axes[1,4].set_ylabel('电流I (mA)'); axes[1,4].set_title('光敏三极管光谱特性曲线 (30Lx)'); axes[1,4].legend(); axes[1,4].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    fpath, url = _save_fig(user_id, 'photo-devices', '光电器件性能曲线')
+    return fpath, url
+
+
+# -------------------------- 新增：太阳能电池特性 --------------------------
+def plot_solar_cell(
+    user_id: int,
+    dark_voltage: List[float], dark_current: List[float],
+    light_voltage: List[float], light_current: List[float],
+    relative_intensity: List[float], light_power: List[float], short_circuit_current: List[float], open_circuit_voltage: List[float]
+) -> List[Tuple[str, str]]:
+    _set_chinese_font()
+    results: List[Tuple[str, str]] = []
+
+    # 图1：全暗伏安特性
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    dv = np.array(dark_voltage, dtype=float)
+    dc = np.array(dark_current, dtype=float)
+    plt.plot(dv, dc, 'b-o', linewidth=2, markersize=6, label='全暗伏安特性')
+    plt.xlabel('外加偏压 (V)'); plt.ylabel('电流 (mA)'); plt.title('全暗情况下太阳能电池在外加偏压时的伏安特性曲线', fontweight='bold')
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=10); plt.tight_layout()
+    results.append(_save_fig(user_id, 'solar-cell', '图1_全暗伏安'))
+
+    # 图2：光照时输出伏安特性
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    lv = np.array(light_voltage, dtype=float)
+    lc = np.array(light_current, dtype=float)
+    plt.plot(lv, lc, 'r-o', linewidth=2, markersize=6, label='光照伏安特性')
+    plt.xlabel('输出电压 (V)'); plt.ylabel('输出电流 (mA)'); plt.title('太阳能电池在光照时的输出伏安特性曲线', fontweight='bold')
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=10); plt.tight_layout()
+    results.append(_save_fig(user_id, 'solar-cell', '图2_光照伏安'))
+
+    # 共有数据
+    ri = np.array(relative_intensity, dtype=float)
+    lp = np.array(light_power, dtype=float)
+    sci = np.array(short_circuit_current, dtype=float)
+    ocv = np.array(open_circuit_voltage, dtype=float)
+
+    # 图3：短路电流-相对光强
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    plt.plot(ri, sci, 'g-o', linewidth=2, markersize=6, label='短路电流-相对光强')
+    plt.xlabel('相对光强'); plt.ylabel('短路电流 (mA)'); plt.title('太阳能电池短路电流与相对光强的关系曲线', fontweight='bold')
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=10); plt.tight_layout()
+    results.append(_save_fig(user_id, 'solar-cell', '图3_短路电流相对光强'))
+
+    # 图4：开路电压-相对光强
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    plt.plot(ri, ocv, 'm-o', linewidth=2, markersize=6, label='开路电压-相对光强')
+    plt.xlabel('相对光强'); plt.ylabel('开路电压 (V)'); plt.title('太阳能电池开路电压与相对光强的关系曲线', fontweight='bold')
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=10); plt.tight_layout()
+    results.append(_save_fig(user_id, 'solar-cell', '图4_开路电压相对光强'))
+
+    # 图5：短路电流-光功率（线性拟合）
+    def linear_func(x, a, b):
+        return a * x + b
+    params_i, _ = optimize.curve_fit(linear_func, lp, sci)
+    a_i, b_i = float(params_i[0]), float(params_i[1])
+    fit_i = linear_func(lp, a_i, b_i)
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    plt.scatter(lp, sci, c='blue', s=60, label='实验数据')
+    plt.plot(lp, fit_i, 'r-', linewidth=2, label=f'拟合曲线: I = {a_i:.1f}P + {b_i:.2f}')
+    plt.xlabel('光功率 (mW)'); plt.ylabel('短路电流 (mA)'); plt.title('太阳能电池短路电流与光功率的关系曲线（含拟合）', fontweight='bold')
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=10); plt.tight_layout()
+    results.append(_save_fig(user_id, 'solar-cell', '图5_短路电流光功率'))
+
+    # 图6：开路电压-光功率（对数拟合）
+    def log_func(x, a, b):
+        return a * np.log(x) + b
+    params_v, _ = optimize.curve_fit(log_func, lp, ocv)
+    a_v, b_v = float(params_v[0]), float(params_v[1])
+    fit_v = log_func(lp, a_v, b_v)
+    plt.figure(figsize=_new_fig_size_cm(20, 12))
+    plt.scatter(lp, ocv, c='green', s=60, label='实验数据')
+    plt.plot(lp, fit_v, 'orange', linewidth=2, label=f'拟合曲线: V = {a_v:.2f}ln(P) + {b_v:.2f}')
+    plt.xlabel('光功率 (mW)'); plt.ylabel('开路电压 (V)'); plt.title('太阳能电池开路电压与光功率的关系曲线（含拟合）', fontweight='bold')
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=10); plt.tight_layout()
+    results.append(_save_fig(user_id, 'solar-cell', '图6_开路电压光功率'))
+
+    return results
+
+
+# -------------------------- 新增：超声波实验（含自由落体/匀变速/牛顿第二定律） --------------------------
+def plot_ultrasound(
+    user_id: int,
+    t_free_fall: List[float], v_free_fall_1: List[float], v_free_fall_2: Optional[List[float]], v_free_fall_3: Optional[List[float]], v_free_fall_4: Optional[List[float]],
+    t1: List[float], v1_1: List[float], v1_2: List[float], v1_3: List[float], v1_4: List[float],
+    t2: List[float], v2_1: List[float], v2_2: List[float], v2_3: List[float], v2_4: List[float],
+    t3: List[float], v3_1: List[float], v3_2: List[float], v3_3: List[float], v3_4: List[float],
+    m: List[float], a_measured: List[float]
+) -> List[Tuple[str, str]]:
+    _set_chinese_font()
+    results: List[Tuple[str, str]] = []
+
+    def linear_fit(x, y):
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+        return float(slope), float(intercept), float(r_value**2)
+
+    # 自由落体：使用可用的 1..4 组速度的平均值
+    t_free = np.array(t_free_fall, dtype=float)
+    v_groups = [np.array(v_free_fall_1, dtype=float)]
+    for vg in [v_free_fall_2, v_free_fall_3, v_free_fall_4]:
+        if vg is not None and len(vg) == len(t_free):
+            v_groups.append(np.array(vg, dtype=float))
+    v_avg = np.mean(np.stack(v_groups, axis=0), axis=0) if v_groups else np.array([], dtype=float)
+    slope, intercept, r2 = linear_fit(t_free, v_avg)
+    t_fit = np.linspace(float(np.min(t_free)), float(np.max(t_free)), 100)
+    v_fit = slope * t_fit + intercept
+    fig1, ax1 = plt.subplots(figsize=_new_fig_size_cm(20, 12))
+    colors = ['blue','red','green','orange']
+    for idx, vg in enumerate(v_groups):
+        ax1.scatter(t_free, vg, label=f'第{idx+1}组数据', s=60, alpha=0.7, color=colors[idx % len(colors)])
+    ax1.plot(t_fit, v_fit, 'k-', linewidth=2, label=f'拟合直线 (g={slope:.4f} m/s²)')
+    ax1.set_xlabel('时间 t (s)'); ax1.set_ylabel('速度 v (m/s)'); ax1.set_title('自由落体运动速度-时间关系图', fontweight='bold')
+    ax1.legend(fontsize=10); ax1.grid(True, alpha=0.3)
+    ax1.text(0.05, 0.95, f'拟合方程: v = {slope:.4f}t + {intercept:.4f}\nR² = {r2:.6f}', transform=ax1.transAxes,
+             fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    plt.tight_layout()
+    results.append(_save_fig(user_id, 'ultrasound', '自由落体运动拟合图'))
+
+    # 匀变速第1组
+    def plot_uniform_group(t_arr, vs_arrs, group_idx: int):
+        fig, ax = plt.subplots(figsize=_new_fig_size_cm(20, 12))
+        colors = ['blue','red','green','orange']
+        for i, v_arr in enumerate(vs_arrs):
+            ax.scatter(t_arr, v_arr, label=f'第{i+1}次测量', s=50, alpha=0.7, color=colors[i % len(colors)])
+        v_avg = np.mean(np.stack(vs_arrs, axis=0), axis=0)
+        slope, intercept, r2 = linear_fit(t_arr, v_avg)
+        t_fit = np.linspace(float(np.min(t_arr)), float(np.max(t_arr)), 100)
+        v_fit = slope * t_fit + intercept
+        ax.plot(t_fit, v_fit, 'k-', linewidth=2, label=f'拟合直线 (a={slope:.4f} m/s²)')
+        ax.set_xlabel('时间 t (s)'); ax.set_ylabel('速度 v (m/s)'); ax.set_title(f'匀变速运动第{group_idx}组速度-时间关系图', fontweight='bold')
+        ax.legend(fontsize=10); ax.grid(True, alpha=0.3)
+        ax.text(0.05, 0.95, f'拟合方程: v = {slope:.4f}t + {intercept:.4f}\nR² = {r2:.6f}', transform=ax.transAxes,
+                fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+        plt.tight_layout()
+        return _save_fig(user_id, 'ultrasound', f'匀变速第{group_idx}组拟合图')
+
+    results.append(plot_uniform_group(np.array(t1, dtype=float), [np.array(v1_1, dtype=float), np.array(v1_2, dtype=float), np.array(v1_3, dtype=float), np.array(v1_4, dtype=float)], 1))
+    results.append(plot_uniform_group(np.array(t2, dtype=float), [np.array(v2_1, dtype=float), np.array(v2_2, dtype=float), np.array(v2_3, dtype=float), np.array(v2_4, dtype=float)], 2))
+    results.append(plot_uniform_group(np.array(t3, dtype=float), [np.array(v3_1, dtype=float), np.array(v3_2, dtype=float), np.array(v3_3, dtype=float), np.array(v3_4, dtype=float)], 3))
+
+    # 牛顿第二定律验证图
+    fig5, ax5 = plt.subplots(figsize=_new_fig_size_cm(20, 12))
+    m_arr = np.array(m, dtype=float)
+    a_arr = np.array(a_measured, dtype=float)
+    slope_g, intercept_g, r2_g = linear_fit(m_arr, a_arr)
+    m_fit = np.linspace(float(np.min(m_arr)), float(np.max(m_arr)), 100)
+    a_fit = slope_g * m_fit + intercept_g
+    ax5.scatter(m_arr, a_arr, s=100, color='red', alpha=0.8, label='实验数据点')
+    ax5.plot(m_fit, a_fit, 'b-', linewidth=2, label=f'拟合直线 (斜率={slope_g:.2f})')
+    ax5.set_xlabel('砝码质量 m (kg)'); ax5.set_ylabel('加速度 a (m/s²)'); ax5.set_title('牛顿第二定律验证图 (a - m 关系)', fontweight='bold')
+    ax5.legend(fontsize=10); ax5.grid(True, alpha=0.3)
+    ax5.text(0.05, 0.95, f'拟合方程: a = {slope_g:.2f}m + {intercept_g:.4f}\nR² = {r2_g:.6f}\n理论斜率 g = 9.8 m/s²', transform=ax5.transAxes,
+             fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    plt.tight_layout()
+    results.append(_save_fig(user_id, 'ultrasound', '牛顿第二定律验证图'))
+
+    return results

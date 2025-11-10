@@ -10,8 +10,9 @@ from .schemas import (
     WechatLoginRequest, LoginResponse, UserOut, UsersOut,
     FiberPlotRequest, FrankHertzRequest, MillikanRequest, MechanicsRequest,
     PlotImagesResponse,
+    ThermalRequest, PhotoDevicesRequest, SolarCellRequest, UltrasoundRequest,
 )
-from .crud import get_user_by_openid, create_user
+from .crud import get_user_by_openid, create_user, create_plot_records
 from .auth import wechat_code2session
 from .security import create_access_token
 from .deps import get_current_user, get_current_admin_user
@@ -19,6 +20,7 @@ from .plots import (
     plot_fiber_iu, plot_fiber_pi, plot_photodiode_iv,
     plot_frank_hertz, plot_millikan,
     plot_mech_t2_m, plot_mech_v2_x2,
+    plot_thermal, plot_photo_devices, plot_solar_cell, plot_ultrasound,
 )
 
 
@@ -149,6 +151,143 @@ def api_plot_frank_hertz(payload: FrankHertzRequest, user=Depends(get_current_us
     resp = PlotImagesResponse(images=images, message=f"共生成{len(images)}张图像")
     if images_data:
         resp.images_data = images_data
+    return resp
+
+
+# -------------------------- 新增绘图接口 --------------------------
+
+@app.post("/api/plots/thermal", response_model=PlotImagesResponse)
+def api_plot_thermal(payload: ThermalRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    # 基本校验
+    if not (payload.temperatures and payload.pt100_resistance and payload.ntc_resistance):
+        raise HTTPException(status_code=400, detail="temperatures / pt100_resistance / ntc_resistance 不能为空")
+    if not (len(payload.temperatures) == len(payload.pt100_resistance) == len(payload.ntc_resistance)):
+        raise HTTPException(status_code=400, detail="三个数组长度需一致")
+    results = plot_thermal(user.user_id, payload.temperatures, payload.pt100_resistance, payload.ntc_resistance)
+    try:
+        create_plot_records(db, user.user_id, 'thermal', results)
+    except Exception:
+        pass
+    images = [u for _, u in results]
+    resp = PlotImagesResponse(images=images, message=f"共生成{len(images)}张图像")
+    if payload.return_data_uri:
+        imgs = []
+        for fp, _ in results:
+            with open(fp, 'rb') as f:
+                imgs.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
+        resp.images_data = imgs
+    return resp
+
+
+@app.post("/api/plots/photo-devices", response_model=PlotImagesResponse)
+def api_plot_photo_devices(payload: PhotoDevicesRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    # 基本非空校验（长度不做强制一致，按各自曲线绘制）
+    for name in [
+        'led_I','led_V','led_P','ld_I','ld_V','ld_P','pd_L','pd_I_L','pd_V','pd_I_V','pd_wl','pd_I_wl','pt_L','pt_I_L','pt_V','pt_I_V','pt_wl','pt_I_wl'
+    ]:
+        arr = getattr(payload, name, None)
+        if not arr:
+            raise HTTPException(status_code=400, detail=f"字段 {name} 不能为空")
+    fpath, url = plot_photo_devices(
+        user.user_id,
+        payload.led_I, payload.led_V, payload.led_P,
+        payload.ld_I, payload.ld_V, payload.ld_P, payload.ld_linear_start_idx or 4,
+        payload.pd_L, payload.pd_I_L, payload.pd_V, payload.pd_I_V, payload.pd_wl, payload.pd_I_wl,
+        payload.pt_L, payload.pt_I_L, payload.pt_V, payload.pt_I_V, payload.pt_wl, payload.pt_I_wl
+    )
+    try:
+        create_plot_records(db, user.user_id, 'photo-devices', [(fpath, url)])
+    except Exception:
+        pass
+    resp = PlotImagesResponse(images=[url], message="生成完成")
+    if payload.return_data_uri:
+        with open(fpath, 'rb') as f:
+            resp.images_data = ['data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8')]
+    return resp
+
+
+@app.post("/api/plots/solar-cell", response_model=PlotImagesResponse)
+def api_plot_solar_cell(payload: SolarCellRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    # 基本校验
+    for name in [
+        'dark_voltage','dark_current','light_voltage','light_current','relative_intensity','light_power','short_circuit_current','open_circuit_voltage'
+    ]:
+        arr = getattr(payload, name, None)
+        if not arr:
+            raise HTTPException(status_code=400, detail=f"字段 {name} 不能为空")
+    results = plot_solar_cell(
+        user.user_id,
+        payload.dark_voltage, payload.dark_current,
+        payload.light_voltage, payload.light_current,
+        payload.relative_intensity, payload.light_power, payload.short_circuit_current, payload.open_circuit_voltage
+    )
+    try:
+        create_plot_records(db, user.user_id, 'solar-cell', results)
+    except Exception:
+        pass
+    images = [u for _, u in results]
+    resp = PlotImagesResponse(images=images, message=f"共生成{len(images)}张图像")
+    if payload.return_data_uri:
+        imgs = []
+        for fp, _ in results:
+            with open(fp, 'rb') as f:
+                imgs.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
+        resp.images_data = imgs
+    return resp
+
+
+@app.post("/api/plots/ultrasound", response_model=PlotImagesResponse)
+def api_plot_ultrasound(payload: UltrasoundRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    # 校验必填数组非空
+    required_groups = [
+        't_free_fall','v_free_fall_1',
+        't1','v1_1','v1_2','v1_3','v1_4',
+        't2','v2_1','v2_2','v2_3','v2_4',
+        't3','v3_1','v3_2','v3_3','v3_4',
+        'm','a_measured'
+    ]
+    for name in required_groups:
+        arr = getattr(payload, name, None)
+        if not arr:
+            raise HTTPException(status_code=400, detail=f"字段 {name} 不能为空")
+    # 长度一致性：自由落体 1..4 组速度需与 t_free_fall 一致
+    n_free = len(payload.t_free_fall)
+    for vname in ['v_free_fall_1','v_free_fall_2','v_free_fall_3','v_free_fall_4']:
+        v = getattr(payload, vname, None)
+        if v is not None and len(v) != n_free:
+            raise HTTPException(status_code=400, detail=f"{vname} 长度需与 t_free_fall 一致")
+    # 三组匀变速：各组 4 次测量长度需与对应 t 数组一致
+    for tname, vnames in [
+        ('t1', ['v1_1','v1_2','v1_3','v1_4']),
+        ('t2', ['v2_1','v2_2','v2_3','v2_4']),
+        ('t3', ['v3_1','v3_2','v3_3','v3_4']),
+    ]:
+        n = len(getattr(payload, tname))
+        for vn in vnames:
+            v = getattr(payload, vn)
+            if len(v) != n:
+                raise HTTPException(status_code=400, detail=f"{vn} 长度需与 {tname} 一致")
+
+    results = plot_ultrasound(
+        user.user_id,
+        payload.t_free_fall, payload.v_free_fall_1, payload.v_free_fall_2, payload.v_free_fall_3, payload.v_free_fall_4,
+        payload.t1, payload.v1_1, payload.v1_2, payload.v1_3, payload.v1_4,
+        payload.t2, payload.v2_1, payload.v2_2, payload.v2_3, payload.v2_4,
+        payload.t3, payload.v3_1, payload.v3_2, payload.v3_3, payload.v3_4,
+        payload.m, payload.a_measured
+    )
+    try:
+        create_plot_records(db, user.user_id, 'ultrasound', results)
+    except Exception:
+        pass
+    images = [u for _, u in results]
+    resp = PlotImagesResponse(images=images, message=f"共生成{len(images)}张图像")
+    if payload.return_data_uri:
+        imgs = []
+        for fp, _ in results:
+            with open(fp, 'rb') as f:
+                imgs.append('data:image/png;base64,' + base64.b64encode(f.read()).decode('utf-8'))
+        resp.images_data = imgs
     return resp
 
 

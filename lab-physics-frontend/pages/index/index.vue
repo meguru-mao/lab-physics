@@ -50,6 +50,10 @@ export default {
       else if (name === '弗兰克赫兹') url = '/pages/experiments/frank'
       else if (name === '密里根油滴') url = '/pages/experiments/millikan'
       else if (name === '力学综合实验' || name === '力学实验') url = '/pages/experiments/mechanics'
+      else if (name === '超声波') url = '/pages/experiments/ultrasound'
+      else if (name === '太阳能电池') url = '/pages/experiments/solar-cell'
+      else if (name === '热学综合') url = '/pages/experiments/thermal'
+      else if (name === '光电器件性能') url = '/pages/experiments/photo-devices'
       if (url) {
         uni.navigateTo({ url })
       } else {
