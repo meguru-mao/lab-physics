@@ -17,8 +17,13 @@
           </view>
         </view>
         <view class="field">
-          <view class="label">电流IA，共82组数据用,隔开</view>
-          <textarea v-model="g.currents" :maxlength="-1" placeholder="例如：0,0.002,0.014,0.045,..." />
+          <view class="label">电流 IA（82 个输入框，4 列排列，含编号）</view>
+          <view class="grid-4">
+            <view class="cell" v-for="(v, i) in g.currentsArr" :key="'ia_'+idx+'_'+i">
+              <input v-model="g.currentsArr[i]" type="digit" placeholder="IA" />
+              <text class="cell-index">{{ i + 1 }}</text>
+            </view>
+          </view>
         </view>
         <button class="danger mini" @click="removeGroup(idx)" v-if="groups.length>1">移除该组</button>
         <view class="divider" />
@@ -46,7 +51,7 @@ export default {
     return {
       // VG2K 固定默认生成，无需用户填写
       groups: [
-        { vg1: '', vg2a: '', vg2p: '', currents: '' }
+        { vg1: '', vg2a: '', vg2p: '', currentsArr: Array(82).fill('') }
       ],
       images: []
     }
@@ -71,14 +76,14 @@ export default {
     parseNums(str) {
       return (str || '').split(/[,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v))
     },
-    addGroup() { this.groups.push({ vg1: '', vg2a: '', vg2p: '', currents: '' }) },
+    addGroup() { this.groups.push({ vg1: '', vg2a: '', vg2p: '', currentsArr: Array(82).fill('') }) },
     removeGroup(i) { this.groups.splice(i, 1) },
     async onSubmit() {
       const VG2K = Array.from({ length: 82 }, (_, i) => i + 1)
       const payload = { VG2K, groups: [] }
       for (let idx = 0; idx < this.groups.length; idx++) {
         const g = this.groups[idx]
-        const currents = this.parseNums(g.currents)
+        const currents = g.currentsArr.map(s => parseFloat(s)).filter(v => !isNaN(v))
         const vg1 = parseFloat(g.vg1)
         const vg2a = parseFloat(g.vg2a)
         const vg2p = parseFloat(g.vg2p)
@@ -158,8 +163,11 @@ export default {
 .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
 textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
-input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; box-sizing: border-box; background: #fff; }
+input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 44rpx 0 12rpx; box-sizing: border-box; background: #fff; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; align-items: center; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.cell { position: relative; }
+.cell-index { position: absolute; top: 8rpx; right: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .danger { height: 64rpx; background: #e94f4f; color: #fff; border-radius: 10rpx; font-size: 26rpx; }

@@ -13,12 +13,22 @@
     <view v-if="plotType==='iu'" class="section">
       <view class="title">I-U 图数据</view>
       <view class="field">
-        <view class="label">U (逗号分隔)</view>
-        <textarea v-model="form.U" :maxlength="-1" placeholder="例如：0,0.75,1.0,1.1" />
+        <view class="label">U（一行四个输入框，含编号）</view>
+        <view class="grid-4">
+          <view class="cell" v-for="(v, i) in iuU" :key="'iuU_'+i">
+            <input v-model="iuU[i]" type="digit" placeholder="U" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
       <view class="field">
-        <view class="label">I (逗号分隔，单位 mA)</view>
-        <textarea v-model="form.I" :maxlength="-1" placeholder="例如：0,0.2,5,10" />
+        <view class="label">I（mA，一行四个输入框，含编号）</view>
+        <view class="grid-4">
+          <view class="cell" v-for="(v, i) in iuI" :key="'iuI_'+i">
+            <input v-model="iuI[i]" type="digit" placeholder="I" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -26,12 +36,22 @@
     <view v-if="plotType==='pi'" class="section">
       <view class="title">P-I 图数据</view>
       <view class="field">
-        <view class="label">I (逗号分隔，单位 mA)</view>
-        <textarea v-model="form.I" :maxlength="-1" placeholder="例如：0,5,10,15" />
+        <view class="label">I（mA，一行四个输入框，含编号）</view>
+        <view class="grid-4">
+          <view class="cell" v-for="(v, i) in piI" :key="'piI_'+i">
+            <input v-model="piI[i]" type="digit" placeholder="I" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
       <view class="field">
-        <view class="label">P (逗号分隔，单位 mW)</view>
-        <textarea v-model="form.P" :maxlength="-1" placeholder="例如：0,0.001,0.167,0.411" />
+        <view class="label">P（mW，一行四个输入框，含编号）</view>
+        <view class="grid-4">
+          <view class="cell" v-for="(v, i) in piP" :key="'piP_'+i">
+            <input v-model="piP[i]" type="digit" placeholder="P" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -39,20 +59,40 @@
     <view v-if="plotType==='photodiode'" class="section">
       <view class="title">光电二极管 I-V 数据</view>
       <view class="field">
-        <view class="label">V (逗号分隔，单位 V)</view>
-        <textarea v-model="form.V" :maxlength="-1" placeholder="例如：0,1,2,3,4,5" />
+        <view class="label">V（两行，每行三个输入框，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in pdV" :key="'pdV_'+i">
+            <input v-model="pdV[i]" type="digit" placeholder="V" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
       <view class="field">
-        <view class="label">I0 (P=0mW，逗号分隔)</view>
-        <textarea v-model="form.I0" :maxlength="-1" placeholder="例如：0,0,0,0,0,0" />
+        <view class="label">I0（两行，每行三个输入框，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in pdI0" :key="'pdI0_'+i">
+            <input v-model="pdI0[i]" type="digit" placeholder="I0" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
       <view class="field">
-        <view class="label">I1 (P=0.100mW，逗号分隔)</view>
-        <textarea v-model="form.I1" :maxlength="-1" placeholder="例如：98,99,99,100,98,99" />
+        <view class="label">I1（两行，每行三个输入框，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in pdI1" :key="'pdI1_'+i">
+            <input v-model="pdI1[i]" type="digit" placeholder="I1" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
       <view class="field">
-        <view class="label">I2 (P=0.200mW，逗号分隔)</view>
-        <textarea v-model="form.I2" :maxlength="-1" placeholder="例如：200,200,199,200,200,200" />
+        <view class="label">I2（两行，每行三个输入框，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in pdI2" :key="'pdI2_'+i">
+            <input v-model="pdI2[i]" type="digit" placeholder="I2" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -76,7 +116,14 @@ export default {
   data() {
     return {
       plotType: 'iu',
-      form: { U: '', I: '', P: '', V: '', I0: '', I1: '', I2: '' },
+      iuU: Array(4).fill(''),
+      iuI: Array(4).fill(''),
+      piI: Array(4).fill(''),
+      piP: Array(4).fill(''),
+      pdV: Array(6).fill(''),
+      pdI0: Array(6).fill(''),
+      pdI1: Array(6).fill(''),
+      pdI2: Array(6).fill(''),
       images: []
     }
   },
@@ -107,34 +154,34 @@ export default {
         .map(s => parseFloat(s))
         .filter(v => !isNaN(v))
     },
+    toNums(arr) { return arr.map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
       const type = this.plotType
       let payload = { plot_type: type }
       if (type === 'iu') {
-        const U = this.parseNums(this.form.U)
-        const I = this.parseNums(this.form.I)
-        if (!U.length || !I.length || U.length !== I.length) {
-          uni.showToast({ title: 'U 与 I 必须均为非空且长度一致', icon: 'none' })
+        const U = this.toNums(this.iuU)
+        const I = this.toNums(this.iuI)
+        if (U.length !== 4 || I.length !== 4 || U.length !== I.length) {
+          uni.showToast({ title: 'U 与 I 需各填满4项且长度一致', icon: 'none' })
           return
         }
         payload.U = U; payload.I = I
       } else if (type === 'pi') {
-        const I = this.parseNums(this.form.I)
-        const P = this.parseNums(this.form.P)
-        if (!I.length || !P.length || I.length !== P.length) {
-          uni.showToast({ title: 'I 与 P 必须均为非空且长度一致', icon: 'none' })
+        const I = this.toNums(this.piI)
+        const P = this.toNums(this.piP)
+        if (I.length !== 4 || P.length !== 4 || I.length !== P.length) {
+          uni.showToast({ title: 'I 与 P 需各填满4项且长度一致', icon: 'none' })
           return
         }
         payload.I = I; payload.P = P
       } else if (type === 'photodiode') {
-        const V = this.parseNums(this.form.V)
-        const I0 = this.parseNums(this.form.I0)
-        const I1 = this.parseNums(this.form.I1)
-        const I2 = this.parseNums(this.form.I2)
-        const ok = V.length && I0.length && I1.length && I2.length &&
-                   V.length === I0.length && V.length === I1.length && V.length === I2.length
+        const V = this.toNums(this.pdV)
+        const I0 = this.toNums(this.pdI0)
+        const I1 = this.toNums(this.pdI1)
+        const I2 = this.toNums(this.pdI2)
+        const ok = (V.length === 6 && I0.length === 6 && I1.length === 6 && I2.length === 6)
         if (!ok) {
-          uni.showToast({ title: 'V、I0、I1、I2 必须非空且长度一致', icon: 'none' })
+          uni.showToast({ title: 'V、I0、I1、I2 需各填满6项且长度一致', icon: 'none' })
           return
         }
         payload.V = V; payload.I0 = I0; payload.I1 = I1; payload.I2 = I2
@@ -215,6 +262,11 @@ export default {
 .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
 textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
+input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 44rpx 0 12rpx; box-sizing: border-box; background: #fff; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.cell { position: relative; }
+.cell-index { position: absolute; top: 8rpx; right: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }

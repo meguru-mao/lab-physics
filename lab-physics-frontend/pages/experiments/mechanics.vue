@@ -3,14 +3,42 @@
     <view class="section">
       <view class="title">T²-M 数据</view>
       <view class="field"><view class="label">滑块质量 m0（g）</view><input v-model="t2m.m0_g" type="digit" placeholder="例如：241.68" /></view>
-      <view class="field"><view class="label">砝码质量m（逗号分隔）</view><textarea v-model="t2m.weights_g" :maxlength="-1" placeholder="例如：20,40,50,70,100" /></view>
-      <view class="field"><view class="label">10T平均值（逗号分隔，单位 s）</view><textarea v-model="t2m.T10_avg_s" :maxlength="-1" placeholder="例如：17.0158,17.6387,17.9340,18.5316,19.3818" /></view>
+      <view class="field"><view class="label">砝码质量 m（两行，3+2，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in weightsArr" :key="'w_'+i">
+            <input v-model="weightsArr[i]" type="digit" placeholder="m" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
+      </view>
+      <view class="field"><view class="label">10T 平均值（两行，3+2，单位 s，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in t10Arr" :key="'t10_'+i">
+            <input v-model="t10Arr[i]" type="digit" placeholder="T10" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
+      </view>
     </view>
 
     <view class="section">
       <view class="title">v²-x² 数据</view>
-      <view class="field"><view class="label">位移（逗号分隔，单位 cm）</view><textarea v-model="v2x2.x_cm" :maxlength="-1" placeholder="例如：0,4,6,8,10,12,14,16,18" /></view>
-      <view class="field"><view class="label">速度平均值（逗号分隔，单位 cm/s）</view><textarea v-model="v2x2.v_avg_cms" :maxlength="-1" placeholder="例如：77.34,72.47,71.17,69.17,63.92,57.30,49.67,41.67,29.70" /></view>
+      <view class="field"><view class="label">位移（3 行，每行 3 个，单位 cm，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in xArr" :key="'x_'+i">
+            <input v-model="xArr[i]" type="digit" placeholder="x" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
+      </view>
+      <view class="field"><view class="label">速度平均值（3 行，每行 3 个，单位 cm/s，含编号）</view>
+        <view class="grid-3">
+          <view class="cell" v-for="(v, i) in vAvgArr" :key="'vavg_'+i">
+            <input v-model="vAvgArr[i]" type="digit" placeholder="v" />
+            <text class="cell-index">{{ i + 1 }}</text>
+          </view>
+        </view>
+      </view>
     </view>
 
     <button class="primary" @click="onSubmit">生成图像</button>
@@ -30,8 +58,11 @@ import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
 export default {
   data() {
     return {
-      t2m: { m0_g: '', weights_g: '', T10_avg_s: '' },
-      v2x2: { x_cm: '', v_avg_cms: '' },
+      t2m: { m0_g: '' },
+      weightsArr: Array(5).fill(''),
+      t10Arr: Array(5).fill(''),
+      xArr: Array(9).fill(''),
+      vAvgArr: Array(9).fill(''),
       images: []
     }
   },
@@ -55,15 +86,15 @@ export default {
     parseNums(str) { return (str || '').split(/[,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
       const m0_g = parseFloat(this.t2m.m0_g)
-      const weights_g = this.parseNums(this.t2m.weights_g)
-      const T10_avg_s = this.parseNums(this.t2m.T10_avg_s)
-      if (isNaN(m0_g) || !weights_g.length || !T10_avg_s.length || weights_g.length !== T10_avg_s.length) {
-        uni.showToast({ title: 'T²-M 数据不合法：m0、weights、T10 必须非空且长度匹配', icon: 'none' }); return
+      const weights_g = this.weightsArr.map(s => parseFloat(s)).filter(v => !isNaN(v))
+      const T10_avg_s = this.t10Arr.map(s => parseFloat(s)).filter(v => !isNaN(v))
+      if (isNaN(m0_g) || weights_g.length !== 5 || T10_avg_s.length !== 5) {
+        uni.showToast({ title: 'T²-M：请填写 m0 及 5 项 weights/T10', icon: 'none' }); return
       }
-      const x_cm = this.parseNums(this.v2x2.x_cm)
-      const v_avg_cms = this.parseNums(this.v2x2.v_avg_cms)
-      if (!x_cm.length || !v_avg_cms.length || x_cm.length !== v_avg_cms.length) {
-        uni.showToast({ title: 'v²-x² 数据不合法：x 与 v 必须非空且长度匹配', icon: 'none' }); return
+      const x_cm = this.xArr.map(s => parseFloat(s)).filter(v => !isNaN(v))
+      const v_avg_cms = this.vAvgArr.map(s => parseFloat(s)).filter(v => !isNaN(v))
+      if (x_cm.length !== 9 || v_avg_cms.length !== 9) {
+        uni.showToast({ title: 'v²-x²：请填写各 9 项数据', icon: 'none' }); return
       }
       const payload = { t2m: { m0_g, weights_g, T10_avg_s }, v2x2: { x_cm, v_avg_cms } }
       try {
@@ -129,7 +160,10 @@ export default {
 .field { margin-bottom: 12rpx; }
 .label { font-size: 24rpx; color: #666; margin-bottom: 4rpx; }
 textarea { width: 100%; min-height: 120rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
-input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 12rpx; background: #fff; }
+input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 44rpx 0 12rpx; background: #fff; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
+.cell { position: relative; }
+.cell-index { position: absolute; top: 8rpx; right: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }
