@@ -35,7 +35,19 @@
 </template>
 
 <script>
-export default {}
+export default {
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '后续计划', path: '/pages/more/plan', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '后续计划', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  }
+}
 </script>
 
 <style>

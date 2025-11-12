@@ -32,6 +32,17 @@
         agree: false
       }
     },
+    onLoad() {
+      if (typeof wx !== 'undefined' && wx.showShareMenu) {
+        wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+      }
+    },
+    onShareAppMessage() {
+      return { title: '巡图大物登录', path: '/pages/login/login', imageUrl: '/static/logo.png' }
+    },
+    onShareTimeline() {
+      return { title: '巡图大物登录', query: 'from=timeline', imageUrl: '/static/logo.png' }
+    },
     methods: {
       onChangeAgree(e) {
         const val = (e && e.detail && e.detail.value) || []

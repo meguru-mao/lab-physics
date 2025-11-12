@@ -60,7 +60,16 @@ export default {
     } catch (e) {
       // ignore
     }
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
     // #endif
+  },
+  onShareAppMessage() {
+    return { title: '巡图大物', path: '/pages/index/index', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '巡图大物', query: 'from=timeline', imageUrl: '/static/logo.png' }
   },
   methods: {
     onPulling(e) {

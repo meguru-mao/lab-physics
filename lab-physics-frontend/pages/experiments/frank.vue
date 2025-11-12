@@ -56,6 +56,17 @@ export default {
       images: []
     }
   },
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '弗兰克赫兹', path: '/pages/experiments/frank', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '弗兰克赫兹', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     toWxFileFromDataUri(dataUri, prefix = 'frank') {
       return new Promise((resolve, reject) => {

@@ -27,6 +27,15 @@
         .then(data => { this.users = data.items || [] })
         .catch(err => { this.error = (err?.data?.detail) || '没有权限或请求失败' })
         .finally(() => { this.loading = false })
+      if (typeof wx !== 'undefined' && wx.showShareMenu) {
+        wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+      }
+    },
+    onShareAppMessage() {
+      return { title: '用户管理', path: '/pages/admin/index', imageUrl: '/static/logo.png' }
+    },
+    onShareTimeline() {
+      return { title: '用户管理', query: 'from=timeline', imageUrl: '/static/logo.png' }
     }
   }
 </script>

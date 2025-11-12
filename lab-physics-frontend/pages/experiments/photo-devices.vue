@@ -166,6 +166,17 @@ export default {
       images: []
     }
   },
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '光电器件性能', path: '/pages/experiments/photo-devices', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '光电器件性能', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     // 支持英文/中文逗号
     parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },

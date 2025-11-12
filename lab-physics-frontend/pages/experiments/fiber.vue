@@ -127,6 +127,17 @@ export default {
       images: []
     }
   },
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '光纤传感与通讯', path: '/pages/experiments/fiber', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '光纤传感与通讯', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     toWxFileFromDataUri(dataUri, prefix = 'fiber') {
       return new Promise((resolve, reject) => {

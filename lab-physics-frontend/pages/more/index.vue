@@ -23,6 +23,17 @@
 
 <script>
 export default {
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '了解更多', path: '/pages/more/index', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '了解更多', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     goPlan() {
       uni.navigateTo({ url: '/pages/more/plan' })

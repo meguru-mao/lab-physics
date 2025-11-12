@@ -38,6 +38,17 @@ export default {
       images: []
     }
   },
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '密里根油滴', path: '/pages/experiments/millikan', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '密里根油滴', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     toWxFileFromDataUri(dataUri, prefix = 'millikan') {
       return new Promise((resolve, reject) => {

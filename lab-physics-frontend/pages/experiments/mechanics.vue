@@ -66,6 +66,17 @@ export default {
       images: []
     }
   },
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '力学实验', path: '/pages/experiments/mechanics', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '力学实验', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     toWxFileFromDataUri(dataUri, prefix = 'mechanics') {
       return new Promise((resolve, reject) => {

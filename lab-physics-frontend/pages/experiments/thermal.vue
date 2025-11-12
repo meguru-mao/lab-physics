@@ -41,6 +41,17 @@ export default {
       images: []
     }
   },
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '热学综合实验', path: '/pages/experiments/thermal', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '热学综合实验', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
   methods: {
     // 支持英文/中文逗号
     parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },

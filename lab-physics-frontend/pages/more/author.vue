@@ -19,7 +19,19 @@
 </template>
 
 <script>
-export default {}
+export default {
+  onLoad() {
+    if (typeof wx !== 'undefined' && wx.showShareMenu) {
+      wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage','shareTimeline'] })
+    }
+  },
+  onShareAppMessage() {
+    return { title: '作者与权益', path: '/pages/more/author', imageUrl: '/static/logo.png' }
+  },
+  onShareTimeline() {
+    return { title: '作者与权益', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  }
+}
 </script>
 
 <style>
