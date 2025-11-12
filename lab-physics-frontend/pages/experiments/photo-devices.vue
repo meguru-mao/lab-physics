@@ -4,7 +4,7 @@
       <view class="title">光电器件性能数据（10子图合成一张）</view>
       <view class="label strong">LED</view>
       <view class="label">LED 电流 I 固定为 0,5,10,15,20,25,30（7 点），无需填写</view>
-      <view class="field"><view class="label">V（两行，第一行4个，第二行3个，含编号）</view>
+      <view class="field"><view class="label">V</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ledVArr" :key="'ledV_'+i">
             <input v-model="ledVArr[i]" type="digit" placeholder="V" />
@@ -12,7 +12,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">P（两行，第一行4个，第二行3个，含编号）</view>
+      <view class="field"><view class="label">P</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ledPArr" :key="'ledP_'+i">
             <input v-model="ledPArr[i]" type="digit" placeholder="P" />
@@ -23,7 +23,7 @@
 
       <view class="label strong">LD（含阈值线性拟合）</view>
       <view class="label">LD 电流 I 固定为 0,3,6,9,12,15,18,21（8 点），无需填写</view>
-      <view class="field"><view class="label">V（两行，均为4个，含编号）</view>
+      <view class="field"><view class="label">V</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ldVArr" :key="'ldV_'+i">
             <input v-model="ldVArr[i]" type="digit" placeholder="V" />
@@ -31,7 +31,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">P（两行，均为4个，含编号）</view>
+      <view class="field"><view class="label">P</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ldPArr" :key="'ldP_'+i">
             <input v-model="ldPArr[i]" type="digit" placeholder="P" />
@@ -42,7 +42,7 @@
       <view class="field"><view class="label">拟合起始索引（默认4）</view><input v-model="ldLinearStartIdx" type="number" placeholder="4" /></view>
 
       <view class="label strong">光敏二极管</view>
-      <view class="field"><view class="label">照度 L（两行，均为3个，含编号）</view>
+      <view class="field"><view class="label">照度 L</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdLArr" :key="'pdL_'+i">
             <input v-model="pdLArr[i]" type="digit" placeholder="L" />
@@ -50,7 +50,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光照特性电流 I（两行，均为3个，含编号）</view>
+      <view class="field"><view class="label">光照特性电流 I</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdILArr" :key="'pdIL_'+i">
             <input v-model="pdILArr[i]" type="digit" placeholder="I(L)" />
@@ -58,7 +58,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">伏安特性电压 V（两行，3+2，含编号）</view>
+      <view class="field"><view class="label">伏安特性电压 V</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdVArr" :key="'pdV_'+i">
             <input v-model="pdVArr[i]" type="digit" placeholder="V" />
@@ -66,7 +66,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">伏安特性电流 I（两行，3+2，含编号）</view>
+      <view class="field"><view class="label">伏安特性电流 I</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdIVArr" :key="'pdIV_'+i">
             <input v-model="pdIVArr[i]" type="digit" placeholder="I(V)" />
@@ -74,7 +74,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光谱波长 λ（两行，4+3，含编号）</view>
+      <view class="field"><view class="label">光谱波长 λ</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in pdWlArr" :key="'pdWl_'+i">
             <input v-model="pdWlArr[i]" type="digit" placeholder="λ" />
@@ -82,7 +82,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光谱电流 I（两行，4+3，含编号）</view>
+      <view class="field"><view class="label">光谱电流 I</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in pdIWlArr" :key="'pdIWl_'+i">
             <input v-model="pdIWlArr[i]" type="digit" placeholder="I(λ)" />
@@ -92,7 +92,7 @@
       </view>
 
       <view class="label strong">光敏三极管</view>
-      <view class="field"><view class="label">照度 L（两行，均为3个，含编号）</view>
+      <view class="field"><view class="label">照度 L</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in ptLArr" :key="'ptL_'+i">
             <input v-model="ptLArr[i]" type="digit" placeholder="L" />
@@ -100,7 +100,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光照特性电流 I（两行，均为3个，含编号）</view>
+      <view class="field"><view class="label">光照特性电流 I</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in ptILArr" :key="'ptIL_'+i">
             <input v-model="ptILArr[i]" type="digit" placeholder="I(L)" />
@@ -108,7 +108,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">伏安特性电压 V（两行，3+2，含编号）</view>
+      <view class="field"><view class="label">伏安特性电压 V</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in ptVArr" :key="'ptV_'+i">
             <input v-model="ptVArr[i]" type="digit" placeholder="V" />
@@ -116,7 +116,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">伏安特性电流 I（两行，3+2，含编号）</view>
+      <view class="field"><view class="label">伏安特性电流 I</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in ptIVArr" :key="'ptIV_'+i">
             <input v-model="ptIVArr[i]" type="digit" placeholder="I(V)" />
@@ -124,7 +124,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光谱波长 λ（两行，4+3，含编号）</view>
+      <view class="field"><view class="label">光谱波长 λ</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ptWlArr" :key="'ptWl_'+i">
             <input v-model="ptWlArr[i]" type="digit" placeholder="λ" />
@@ -132,7 +132,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光谱电流 I（两行，4+3，含编号）</view>
+      <view class="field"><view class="label">光谱电流 I</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ptIWlArr" :key="'ptIWl_'+i">
             <input v-model="ptIWlArr[i]" type="digit" placeholder="I(λ)" />

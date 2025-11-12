@@ -17,7 +17,7 @@
           </view>
         </view>
         <view class="field">
-          <view class="label">电流 IA（82 个输入框，4 列排列，含编号）</view>
+          <view class="label">电流 IA（微安）</view>
           <view class="grid-4">
             <view class="cell" v-for="(v, i) in g.currentsArr" :key="'ia_'+idx+'_'+i">
               <input v-model="g.currentsArr[i]" type="digit" placeholder="IA" />

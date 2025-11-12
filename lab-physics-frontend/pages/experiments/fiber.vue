@@ -13,7 +13,7 @@
     <view v-if="plotType==='iu'" class="section">
       <view class="title">I-U 图数据</view>
       <view class="field">
-        <view class="label">U（一行四个输入框，含编号）</view>
+        <view class="label">U（正向偏压，V）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in iuU" :key="'iuU_'+i">
             <input v-model="iuU[i]" type="digit" placeholder="U" />
@@ -22,7 +22,7 @@
         </view>
       </view>
       <view class="field">
-        <view class="label">I（mA，一行四个输入框，含编号）</view>
+        <view class="label">I（发射管电流，mA）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in iuI" :key="'iuI_'+i">
             <input v-model="iuI[i]" type="digit" placeholder="I" />
@@ -36,7 +36,7 @@
     <view v-if="plotType==='pi'" class="section">
       <view class="title">P-I 图数据</view>
       <view class="field">
-        <view class="label">I（mA，一行四个输入框，含编号）</view>
+        <view class="label">I（发射管电流，mA）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in piI" :key="'piI_'+i">
             <input v-model="piI[i]" type="digit" placeholder="I" />
@@ -45,7 +45,7 @@
         </view>
       </view>
       <view class="field">
-        <view class="label">P（mW，一行四个输入框，含编号）</view>
+        <view class="label">P（光功率，mW）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in piP" :key="'piP_'+i">
             <input v-model="piP[i]" type="digit" placeholder="P" />
@@ -59,7 +59,7 @@
     <view v-if="plotType==='photodiode'" class="section">
       <view class="title">光电二极管 I-V 数据</view>
       <view class="field">
-        <view class="label">V（两行，每行三个输入框，含编号）</view>
+        <view class="label">V（反向偏置电压，V）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdV" :key="'pdV_'+i">
             <input v-model="pdV[i]" type="digit" placeholder="V" />
@@ -68,7 +68,7 @@
         </view>
       </view>
       <view class="field">
-        <view class="label">I0（两行，每行三个输入框，含编号）</view>
+        <view class="label">I0（光电流，mA）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdI0" :key="'pdI0_'+i">
             <input v-model="pdI0[i]" type="digit" placeholder="I0" />
@@ -77,7 +77,7 @@
         </view>
       </view>
       <view class="field">
-        <view class="label">I1（两行，每行三个输入框，含编号）</view>
+        <view class="label">I1（光电流，mA）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdI1" :key="'pdI1_'+i">
             <input v-model="pdI1[i]" type="digit" placeholder="I1" />
@@ -86,7 +86,7 @@
         </view>
       </view>
       <view class="field">
-        <view class="label">I2（两行，每行三个输入框，含编号）</view>
+        <view class="label">I2（光电流，mA）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in pdI2" :key="'pdI2_'+i">
             <input v-model="pdI2[i]" type="digit" placeholder="I2" />
@@ -116,10 +116,10 @@ export default {
   data() {
     return {
       plotType: 'iu',
-      iuU: Array(4).fill(''),
-      iuI: Array(4).fill(''),
-      piI: Array(4).fill(''),
-      piP: Array(4).fill(''),
+      iuU: Array(11).fill(''),
+      iuI: Array(11).fill(''),
+      piI: Array(11).fill(''),
+      piP: Array(11).fill(''),
       pdV: Array(6).fill(''),
       pdI0: Array(6).fill(''),
       pdI1: Array(6).fill(''),
@@ -172,16 +172,16 @@ export default {
       if (type === 'iu') {
         const U = this.toNums(this.iuU)
         const I = this.toNums(this.iuI)
-        if (U.length !== 4 || I.length !== 4 || U.length !== I.length) {
-          uni.showToast({ title: 'U 与 I 需各填满4项且长度一致', icon: 'none' })
+        if (U.length !== 11 || I.length !== 11 || U.length !== I.length) {
+          uni.showToast({ title: 'U 与 I 需各填满11项且长度一致', icon: 'none' })
           return
         }
         payload.U = U; payload.I = I
       } else if (type === 'pi') {
         const I = this.toNums(this.piI)
         const P = this.toNums(this.piP)
-        if (I.length !== 4 || P.length !== 4 || I.length !== P.length) {
-          uni.showToast({ title: 'I 与 P 需各填满4项且长度一致', icon: 'none' })
+        if (I.length !== 11 || P.length !== 11 || I.length !== P.length) {
+          uni.showToast({ title: 'I 与 P 需各填满11项且长度一致', icon: 'none' })
           return
         }
         payload.I = I; payload.P = P

@@ -3,7 +3,7 @@
     <view class="section">
       <view class="title">太阳能电池特性数据（将生成6张图）</view>
       <view class="label strong">图1：全暗伏安特性</view>
-      <view class="field"><view class="label">电压（四行，4+4+4+2，含编号）</view>
+      <view class="field"><view class="label">电压（V）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in darkVArr" :key="'darkV_'+i">
             <input v-model="darkVArr[i]" type="digit" placeholder="V" />
@@ -11,7 +11,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">电流（四行，4+4+4+2，含编号）</view>
+      <view class="field"><view class="label">电流（注意：mA ！！！）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in darkIArr" :key="'darkI_'+i">
             <input v-model="darkIArr[i]" type="digit" placeholder="I" />
@@ -21,7 +21,7 @@
       </view>
 
       <view class="label strong">图2：光照输出伏安特性</view>
-      <view class="field"><view class="label">电压（五行，每行 4 个，含编号）</view>
+      <view class="field"><view class="label">电压（V）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in lightVArr" :key="'lightV_'+i">
             <input v-model="lightVArr[i]" type="digit" placeholder="V" />
@@ -29,7 +29,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">电流（五行，每行 4 个，含编号）</view>
+      <view class="field"><view class="label">电流（mA ）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in lightIArr" :key="'lightI_'+i">
             <input v-model="lightIArr[i]" type="digit" placeholder="I" />
@@ -39,7 +39,7 @@
       </view>
 
       <view class="label strong">图3-图6：光照特性</view>
-      <view class="field"><view class="label">相对光强（3 行，4+4+2，含编号）</view>
+      <view class="field"><view class="label">相对光强J/J0</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in relIntArr" :key="'rel_'+i">
             <input v-model="relIntArr[i]" type="digit" placeholder="相对光强" />
@@ -47,7 +47,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">光功率（3 行，4+4+2，含编号）</view>
+      <view class="field"><view class="label">光功率P（mW）</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in lightPowerArr" :key="'lp_'+i">
             <input v-model="lightPowerArr[i]" type="digit" placeholder="光功率" />
@@ -55,7 +55,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">短路电流（3 行，4+4+2，含编号）</view>
+      <view class="field"><view class="label">短路电流Isc</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in scIArr" :key="'sci_'+i">
             <input v-model="scIArr[i]" type="digit" placeholder="短路电流" />
@@ -63,7 +63,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">开路电压（3 行，4+4+2，含编号）</view>
+      <view class="field"><view class="label">开路电压Uoc</view>
         <view class="grid-4">
           <view class="cell" v-for="(v, i) in ocVArr" :key="'ocv_'+i">
             <input v-model="ocVArr[i]" type="digit" placeholder="开路电压" />

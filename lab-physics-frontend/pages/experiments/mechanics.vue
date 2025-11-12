@@ -3,7 +3,7 @@
     <view class="section">
       <view class="title">T²-M 数据</view>
       <view class="field"><view class="label">滑块质量 m0（g）</view><input v-model="t2m.m0_g" type="digit" placeholder="例如：241.68" /></view>
-      <view class="field"><view class="label">砝码质量 m（两行，3+2，含编号）</view>
+      <view class="field"><view class="label">砝码质量 m（g）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in weightsArr" :key="'w_'+i">
             <input v-model="weightsArr[i]" type="digit" placeholder="m" />
@@ -11,7 +11,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">10T 平均值（两行，3+2，单位 s，含编号）</view>
+      <view class="field"><view class="label">10T 平均值（s）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in t10Arr" :key="'t10_'+i">
             <input v-model="t10Arr[i]" type="digit" placeholder="T10" />
@@ -23,7 +23,7 @@
 
     <view class="section">
       <view class="title">v²-x² 数据</view>
-      <view class="field"><view class="label">位移（3 行，每行 3 个，单位 cm，含编号）</view>
+      <view class="field"><view class="label">位移（cm）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in xArr" :key="'x_'+i">
             <input v-model="xArr[i]" type="digit" placeholder="x" />
@@ -31,7 +31,7 @@
           </view>
         </view>
       </view>
-      <view class="field"><view class="label">速度平均值（3 行，每行 3 个，单位 cm/s，含编号）</view>
+      <view class="field"><view class="label">速度平均值（cm/s）</view>
         <view class="grid-3">
           <view class="cell" v-for="(v, i) in vAvgArr" :key="'vavg_'+i">
             <input v-model="vAvgArr[i]" type="digit" placeholder="v" />

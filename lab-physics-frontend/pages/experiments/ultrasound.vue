@@ -35,7 +35,7 @@
       </view>
 
       <view class="label strong">匀变速运动 第1组</view>
-      <view class="label">时间 t1 与四次速度，均为一行四个输入框</view>
+      <view class="label">时间 t1 与四次速度</view>
       <view class="grid-5 group-row">
         <view class="cell" v-for="(v, i) in t1Arr" :key="'t1_'+i">
           <input v-model="t1Arr[i]" type="digit" placeholder="t1" />
@@ -132,7 +132,6 @@
       </view>
 
       <view class="label strong">牛顿第二定律验证</view>
-      <view class="label">均为一行三个输入框，含编号</view>
       <view class="grid-3 group-row">
         <view class="cell" v-for="(v, i) in mArr" :key="'m_'+i">
           <input v-model="mArr[i]" type="digit" placeholder="m" />
