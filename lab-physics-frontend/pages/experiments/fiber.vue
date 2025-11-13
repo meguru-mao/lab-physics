@@ -96,7 +96,12 @@
       </view>
     </view>
 
-    <button class="primary" @click="onSubmit">生成图像</button>
+    <button class="primary" :disabled="generating" hover-class="primary-hover" @click="onSubmit">生成图像</button>
+
+    <view v-if="generating" class="overlay">
+      <image class="overlay-image" src="/static/asumi.png" mode="widthFix" />
+      <view class="overlay-toast">正在绘图中</view>
+    </view>
 
     <!-- 结果展示 -->
     <view v-if="images.length" class="section">
@@ -111,6 +116,7 @@
 
 <script>
 import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
+import { startGeneration, clearPolling } from '../../utils/generation.js'
 
 export default {
   data() {
@@ -124,7 +130,10 @@ export default {
       pdI0: Array(6).fill(''),
       pdI1: Array(6).fill(''),
       pdI2: Array(6).fill(''),
-      images: []
+      images: [],
+      generating: false,
+      pollTimer: null,
+      taskId: ''
     }
   },
   onLoad() {
@@ -137,6 +146,9 @@ export default {
   },
   onShareTimeline() {
     return { title: '光纤传感与通讯', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
+  onUnload() {
+    clearPolling(this)
   },
   methods: {
     toWxFileFromDataUri(dataUri, prefix = 'fiber') {
@@ -167,6 +179,7 @@ export default {
     },
     toNums(arr) { return arr.map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
+      if (this.generating) return
       const type = this.plotType
       let payload = { plot_type: type }
       if (type === 'iu') {
@@ -197,20 +210,7 @@ export default {
         }
         payload.V = V; payload.I0 = I0; payload.I1 = I1; payload.I2 = I2
       }
-      try {
-        const res = await apiRequest({ url: '/api/plots/fiber', method: 'POST', data: Object.assign({}, payload, { return_data_uri: IS_PROD }) })
-        let imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
-        // #ifdef MP-WEIXIN
-        if (imgs && imgs.length && String(imgs[0]).startsWith('data:')) {
-          try {
-            const files = await Promise.all(imgs.map((d) => this.toWxFileFromDataUri(d)))
-            imgs = files
-          } catch (e) {}
-        }
-        // #endif
-        this.images = imgs
-        if (!this.images.length) uni.showToast({ title: '未返回图像', icon: 'none' })
-      } catch (e) {}
+      await startGeneration(this, apiRequest, '/api/plots/fiber/start', Object.assign({}, payload, { return_data_uri: IS_PROD }), (d) => this.toWxFileFromDataUri(d))
     },
     fullUrl(u) {
       if (!u) return ''
@@ -279,7 +279,12 @@ input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee;
 .cell { position: relative; }
 .cell-index { position: absolute; top: 8rpx; right: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
+.primary-hover { background: #05a955; transform: scale(0.98); }
+.primary[disabled] { opacity: 0.6 }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .image-card { margin-top: 16rpx; }
 .image-card image { width: 100%; }
+.overlay { position: fixed; left: 0; right: 0; top: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+.overlay-image { width: 60%; max-width: 520rpx; border-radius: 12rpx; }
+.overlay-toast { margin-top: 20rpx; background: #fff; color: #333; padding: 16rpx 24rpx; border-radius: 12rpx; font-size: 28rpx; }
 </style>

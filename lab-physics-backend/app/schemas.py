@@ -85,6 +85,16 @@ class PlotImagesResponse(BaseModel):
     images_data: Optional[List[str]] = None
     message: Optional[str] = None
 
+class TaskStartResponse(BaseModel):
+    task_id: str
+    status: Literal['pending']
+
+class TaskStatusResponse(BaseModel):
+    status: Literal['pending','completed','failed']
+    images: Optional[List[str]] = None
+    images_data: Optional[List[str]] = None
+    message: Optional[str] = None
+
 # -------------------------- 新增：四个实验的输入 Schemas --------------------------
 
 class ThermalRequest(BaseModel):

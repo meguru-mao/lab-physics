@@ -142,7 +142,12 @@
       </view>
     </view>
 
-    <button class="primary" @click="onSubmit">生成图像</button>
+    <button class="primary" :disabled="generating" hover-class="primary-hover" @click="onSubmit">生成图像</button>
+
+    <view v-if="generating" class="overlay">
+      <image class="overlay-image" src="/static/asumi.png" mode="widthFix" />
+      <view class="overlay-toast">正在绘图中</view>
+    </view>
 
     <view v-if="images.length" class="section">
       <view class="title">生成结果</view>
@@ -156,6 +161,7 @@
 
 <script>
 import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
+import { startGeneration, clearPolling } from '../../utils/generation.js'
 export default {
   data() {
     return {
@@ -163,7 +169,10 @@ export default {
       ldVArr: Array(8).fill(''), ldPArr: Array(8).fill(''), ldLinearStartIdx: '4',
       pdLArr: Array(6).fill(''), pdILArr: Array(6).fill(''), pdVArr: Array(5).fill(''), pdIVArr: Array(5).fill(''), pdWlArr: Array(7).fill(''), pdIWlArr: Array(7).fill(''),
       ptLArr: Array(6).fill(''), ptILArr: Array(6).fill(''), ptVArr: Array(5).fill(''), ptIVArr: Array(5).fill(''), ptWlArr: Array(7).fill(''), ptIWlArr: Array(7).fill(''),
-      images: []
+      images: [],
+      generating: false,
+      pollTimer: null,
+      taskId: ''
     }
   },
   onLoad() {
@@ -177,11 +186,15 @@ export default {
   onShareTimeline() {
     return { title: '光电器件性能', query: 'from=timeline', imageUrl: '/static/logo.png' }
   },
+  onUnload() {
+    clearPolling(this)
+  },
   methods: {
     // 支持英文/中文逗号
     parseNums(str) { return (str || '').split(/[\,\s，]+/).map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     toNums(arr) { return arr.map(s => parseFloat(s)).filter(v => !isNaN(v)) },
     async onSubmit() {
+      if (this.generating) return
       const led_V = this.toNums(this.ledVArr), led_P = this.toNums(this.ledPArr)
       if (led_V.length !== 7 || led_P.length !== 7) { uni.showToast({ title: 'LED 的 V 与 P 需各填满7项', icon: 'none' }); return }
       const led_I = [0,5,10,15,20,25,30]
@@ -201,15 +214,7 @@ export default {
       for (const [name, arr] of Object.entries({ pt_L: payload.pt_L, pt_I_L: payload.pt_I_L })) { if (arr.length !== 6) { uni.showToast({ title: `${name} 需填满6项`, icon: 'none' }); return } }
       for (const [name, arr] of Object.entries({ pt_V: payload.pt_V, pt_I_V: payload.pt_I_V })) { if (arr.length !== 5) { uni.showToast({ title: `${name} 需填满5项`, icon: 'none' }); return } }
       for (const [name, arr] of Object.entries({ pt_wl: payload.pt_wl, pt_I_wl: payload.pt_I_wl })) { if (arr.length !== 7) { uni.showToast({ title: `${name} 需填满7项`, icon: 'none' }); return } }
-      try {
-        const res = await apiRequest({ url: '/api/plots/photo-devices', method: 'POST', data: payload })
-        let imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
-        // #ifdef MP-WEIXIN
-        if (imgs && imgs.length && String(imgs[0]).startsWith('data:'))
-          imgs = await Promise.all(imgs.map((d) => this.toWxFileFromDataUri(d, 'photo')))
-        // #endif
-        this.images = imgs
-      } catch (e) {}
+      await startGeneration(this, apiRequest, '/api/plots/photo-devices/start', payload, (d) => this.toWxFileFromDataUri(d, 'photo'))
     },
     toWxFileFromDataUri(dataUri, prefix = 'photo') {
       return new Promise((resolve, reject) => {
@@ -256,6 +261,9 @@ export default {
 .field { margin-bottom: 12rpx; }
 .image-card { margin-top: 16rpx; }
 .image-card image { width: 100%; }
+.overlay { position: fixed; left: 0; right: 0; top: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+.overlay-image { width: 60%; max-width: 520rpx; border-radius: 12rpx; }
+.overlay-toast { margin-top: 20rpx; background: #fff; color: #333; padding: 16rpx 24rpx; border-radius: 12rpx; font-size: 28rpx; }
 textarea { width: 100%; min-height: 100rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 12rpx; background: #fff; }
 input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx; padding: 0 44rpx 0 12rpx; background: #fff; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-column-gap: 16rpx; grid-row-gap: 16rpx; }
@@ -263,5 +271,7 @@ input { width: 100%; height: 72rpx; border: 1rpx solid #eee; border-radius: 8rpx
 .cell { position: relative; }
 .cell-index { position: absolute; top: 8rpx; right: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
+.primary-hover { background: #05a955; transform: scale(0.98); }
+.primary[disabled] { opacity: 0.6 }
 .secondary { margin-top: 12rpx; height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 </style>

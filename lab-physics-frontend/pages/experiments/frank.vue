@@ -31,7 +31,12 @@
       <button class="secondary mini" @click="addGroup">新增数据组</button>
     </view>
 
-    <button class="primary" @click="onSubmit">生成图像</button>
+    <button class="primary" :disabled="generating" hover-class="primary-hover" @click="onSubmit">生成图像</button>
+
+    <view v-if="generating" class="overlay">
+      <image class="overlay-image" src="/static/asumi.png" mode="widthFix" />
+      <view class="overlay-toast">正在绘图中</view>
+    </view>
 
     <view v-if="images.length" class="section">
       <view class="title">生成结果</view>
@@ -45,6 +50,7 @@
 
 <script>
 import { apiRequest, API_BASE, IS_PROD } from '../../utils/request.js'
+import { startGeneration, clearPolling } from '../../utils/generation.js'
 
 export default {
   data() {
@@ -53,7 +59,10 @@ export default {
       groups: [
         { vg1: '', vg2a: '', vg2p: '', currentsArr: Array(82).fill('') }
       ],
-      images: []
+      images: [],
+      generating: false,
+      pollTimer: null,
+      taskId: ''
     }
   },
   onLoad() {
@@ -66,6 +75,9 @@ export default {
   },
   onShareTimeline() {
     return { title: '弗兰克赫兹', query: 'from=timeline', imageUrl: '/static/logo.png' }
+  },
+  onUnload() {
+    clearPolling(this)
   },
   methods: {
     toWxFileFromDataUri(dataUri, prefix = 'frank') {
@@ -90,6 +102,7 @@ export default {
     addGroup() { this.groups.push({ vg1: '', vg2a: '', vg2p: '', currentsArr: Array(82).fill('') }) },
     removeGroup(i) { this.groups.splice(i, 1) },
     async onSubmit() {
+      if (this.generating) return
       const VG2K = Array.from({ length: 82 }, (_, i) => i + 1)
       const payload = { VG2K, groups: [] }
       for (let idx = 0; idx < this.groups.length; idx++) {
@@ -110,20 +123,7 @@ export default {
         payload.groups.push({ currents, label })
       }
       if (!payload.groups.length) { uni.showToast({ title: '请至少添加一组数据', icon: 'none' }); return }
-      try {
-        const res = await apiRequest({ url: '/api/plots/frank-hertz', method: 'POST', data: Object.assign({}, payload, { return_data_uri: IS_PROD }) })
-        let imgs = (res && res.images_data && res.images_data.length) ? res.images_data : ((res && res.images) || [])
-        // #ifdef MP-WEIXIN
-        if (imgs && imgs.length && String(imgs[0]).startsWith('data:')) {
-          try {
-            const files = await Promise.all(imgs.map((d) => this.toWxFileFromDataUri(d)))
-            imgs = files
-          } catch (e) {}
-        }
-        // #endif
-        this.images = imgs
-        if (!this.images.length) uni.showToast({ title: '未返回图像', icon: 'none' })
-      } catch (e) {}
+      await startGeneration(this, apiRequest, '/api/plots/frank-hertz/start', Object.assign({}, payload, { return_data_uri: IS_PROD }), (d) => this.toWxFileFromDataUri(d))
     },
     fullUrl(u) {
       if (!u) return ''
@@ -180,10 +180,15 @@ input { width: 100%; height: 72rpx; line-height: 72rpx; border: 1rpx solid #eee;
 .cell { position: relative; }
 .cell-index { position: absolute; top: 8rpx; right: 10rpx; background: #f2f2f2; color: #666; border-radius: 20rpx; padding: 4rpx 10rpx; font-size: 22rpx; }
 .primary { width: 100%; height: 88rpx; background: #07c160; color: #fff; border-radius: 12rpx; font-size: 30rpx; }
+.primary-hover { background: #05a955; transform: scale(0.98); }
+.primary[disabled] { opacity: 0.6 }
 .secondary { height: 72rpx; background: #4a90e2; color: #fff; border-radius: 12rpx; font-size: 28rpx; }
 .danger { height: 64rpx; background: #e94f4f; color: #fff; border-radius: 10rpx; font-size: 26rpx; }
 .mini { margin-top: 8rpx; }
 .divider { height: 1rpx; background: #eee; margin: 16rpx 0; }
 .image-card { margin-top: 16rpx; }
 .image-card image { width: 100%; }
+.overlay { position: fixed; left: 0; right: 0; top: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+.overlay-image { width: 60%; max-width: 520rpx; border-radius: 12rpx; }
+.overlay-toast { margin-top: 20rpx; background: #fff; color: #333; padding: 16rpx 24rpx; border-radius: 12rpx; font-size: 28rpx; }
 </style>
