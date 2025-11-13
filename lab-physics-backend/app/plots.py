@@ -525,7 +525,7 @@ def plot_ultrasound(
         ax1.scatter(t_free, vg, label=f'第{idx+1}组数据', s=60, alpha=0.7, color=colors[idx % len(colors)])
     ax1.plot(t_fit, v_fit, 'k-', linewidth=2, label=f'拟合直线 (g={slope:.4f} m/s²)')
     ax1.set_xlabel('时间 t (s)'); ax1.set_ylabel('速度 v (m/s)'); ax1.set_title('自由落体运动速度-时间关系图', fontweight='bold')
-    ax1.legend(fontsize=10); ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=10, loc='lower right'); ax1.grid(True, alpha=0.3)
     ax1.text(0.05, 0.95, f'拟合方程: v = {slope:.4f}t + {intercept:.4f}\nR² = {r2:.6f}', transform=ax1.transAxes,
              fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     plt.tight_layout()
@@ -543,7 +543,7 @@ def plot_ultrasound(
         v_fit = slope * t_fit + intercept
         ax.plot(t_fit, v_fit, 'k-', linewidth=2, label=f'拟合直线 (a={slope:.4f} m/s²)')
         ax.set_xlabel('时间 t (s)'); ax.set_ylabel('速度 v (m/s)'); ax.set_title(f'匀变速运动第{group_idx}组速度-时间关系图', fontweight='bold')
-        ax.legend(fontsize=10); ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=10, loc='lower right'); ax.grid(True, alpha=0.3)
         ax.text(0.05, 0.95, f'拟合方程: v = {slope:.4f}t + {intercept:.4f}\nR² = {r2:.6f}', transform=ax.transAxes,
                 fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
         plt.tight_layout()
@@ -563,7 +563,7 @@ def plot_ultrasound(
     ax5.scatter(m_arr, a_arr, s=100, color='red', alpha=0.8, label='实验数据点')
     ax5.plot(m_fit, a_fit, 'b-', linewidth=2, label=f'拟合直线 (斜率={slope_g:.2f})')
     ax5.set_xlabel('砝码质量 m (kg)'); ax5.set_ylabel('加速度 a (m/s²)'); ax5.set_title('牛顿第二定律验证图 (a - m 关系)', fontweight='bold')
-    ax5.legend(fontsize=10); ax5.grid(True, alpha=0.3)
+    ax5.legend(fontsize=10, loc='lower right'); ax5.grid(True, alpha=0.3)
     ax5.text(0.05, 0.95, f'拟合方程: a = {slope_g:.2f}m + {intercept_g:.4f}\nR² = {r2_g:.6f}\n理论斜率 g = 9.8 m/s²', transform=ax5.transAxes,
              fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     plt.tight_layout()
