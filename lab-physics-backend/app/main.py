@@ -3,7 +3,8 @@ import base64
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from sqlalchemy import inspect
+from sqlalchemy import inspect, create_engine
+import logging
 from .config import settings
 from .database import Base, engine, get_db
 from .schemas import (
@@ -64,8 +65,25 @@ def on_startup():
         # 启动阶段重命名失败不阻塞服务，后续依然尝试建表
         pass
 
-    # 自动建表（不存在则创建）
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        try:
+            backend = engine.url.get_backend_name()
+            if backend.startswith("mysql") and ("Unknown database" in str(e) or "1049" in str(e)):
+                dbname = engine.url.database
+                server_url = engine.url.set(database=None)
+                with create_engine(server_url).begin() as conn:
+                    conn.exec_driver_sql(f"CREATE DATABASE IF NOT EXISTS `{dbname}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+                Base.metadata.create_all(bind=engine)
+        except Exception:
+            raise
+    try:
+        logging.info(
+            f"db backend={engine.url.get_backend_name()} host={engine.url.host} port={engine.url.port} database={engine.url.database}"
+        )
+    except Exception:
+        pass
 
 
 @app.get("/api/ping")
@@ -350,6 +368,17 @@ def api_plot_mechanics_start(payload: MechanicsRequest, user=Depends(get_current
         raise HTTPException(status_code=400, detail="x_cm 与 v_avg_cms 需长度一致")
     tid = start_mechanics_task(user.user_id, payload)
     return TaskStartResponse(task_id=tid, status='pending')
+
+@app.get("/api/admin/db-info")
+def admin_db_info(admin=Depends(get_current_admin_user)):
+    insp = inspect(engine)
+    return {
+        "backend": engine.url.get_backend_name(),
+        "host": engine.url.host,
+        "port": engine.url.port,
+        "database": engine.url.database,
+        "tables": insp.get_table_names(),
+    }
 @app.post("/api/plots/fiber/start", response_model=TaskStartResponse)
 def api_plot_fiber_start(payload: FiberPlotRequest, user=Depends(get_current_user)):
     if payload.plot_type == 'iu':
