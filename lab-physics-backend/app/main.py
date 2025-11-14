@@ -29,6 +29,7 @@ from .tasks import (
     start_millikan_task, start_mechanics_task, get_task_for_user,
 )
 
+from . import models
 
 app = FastAPI(title=settings.APP_NAME)
 
